@@ -1,6 +1,6 @@
 # wisebu
 
-A new Flutter project.
+Classify your expenses to spend wisely.
 
 ## Getting Started
 
