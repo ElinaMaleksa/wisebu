@@ -1,6 +1,7 @@
 import 'package:clippy_flutter/arc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wisebu/screens/StartIncomesScreen.dart';
 
 class OpenScreen extends StatelessWidget {
   @override
@@ -44,7 +45,10 @@ class OpenScreen extends StatelessWidget {
                 'Let\'s start!',
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => StartIncomesScreen()));
+              },
             ),
           ),
         ],
