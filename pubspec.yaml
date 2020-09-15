@@ -10,6 +10,7 @@ environment:
 
 dependencies:
   clippy_flutter: ^1.1.1
+  circular_check_box: ^1.0.4
 
 
   flutter:
@@ -23,3 +24,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - lib/images/

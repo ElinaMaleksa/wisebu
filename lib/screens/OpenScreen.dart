@@ -1,13 +1,15 @@
 import 'package:clippy_flutter/arc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:wisebu/screens/StartIncomesScreen.dart';
+import 'package:wisebu/screens/SetupScreen.dart';
+import 'package:wisebu/widgets/Widgets.dart';
 
 class OpenScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Arc(
             height: 50,
@@ -15,10 +17,13 @@ class OpenScreen extends StatelessWidget {
               ClipShadow(color: Colors.black54, elevation: 15),
             ],
             child: Container(
-              color: Colors.blueAccent,
+              color: Theme.of(context).primaryColor,
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height * 0.65,
-              child: Center(child: Text('PICTURE HERE')),
+              child: Image.asset(
+                "lib/images/illustration.png",
+                scale: 4,
+              ),
             ),
           ),
           Expanded(
@@ -32,24 +37,23 @@ class OpenScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 25),
                   ))),
           Container(
-            height: MediaQuery.of(context).size.height * 0.06,
-            width: MediaQuery.of(context).size.width * 0.7,
             margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height * 0.08),
-            child: RaisedButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              color: Colors.blueAccent,
-              child: Text(
-                'Let\'s start!',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-              onPressed: () {
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (context) => StartIncomesScreen()));
-              },
-            ),
+                bottom: MediaQuery.of(context).size.height * 0.05),
+            child: yellowButton(
+                context: context,
+                isLarge: true,
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => SetupScreen(
+                        appBarTitle: addIncomesTitle,
+                        buttonText: "Next",
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  );
+                },
+                text: "Let\'s start!"),
           ),
         ],
       ),

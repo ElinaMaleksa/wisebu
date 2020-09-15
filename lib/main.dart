@@ -12,6 +12,8 @@ class MyApp extends StatelessWidget {
       title: 'WiseBu',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        primaryColor: Color(0xFF0072B1),
+        accentColor: Color(0xFFF3C623),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: OpenScreen(),
