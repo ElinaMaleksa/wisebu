@@ -1,3 +1,4 @@
+import 'package:circular_check_box/circular_check_box.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
 
@@ -41,6 +42,53 @@ Widget yellowButton(
         ),
       ),
       onPressed: onPressed,
+    ),
+  );
+}
+
+Widget listTile(
+    {@required BuildContext context,
+    @required String title,
+    @required String moneyAmount,
+    @required Color color,
+    @required onChanged,
+    @required bool value}) {
+  return ListTile(
+    visualDensity: VisualDensity(horizontal: -4, vertical: 0),
+    contentPadding: EdgeInsets.only(left: 0.0, right: 15),
+    title: Text(
+      title,
+      style: TextStyle(fontSize: 18),
+    ),
+    leading: Container(
+      color: color,
+      width: 20,
+    ),
+    trailing: SizedBox(
+      width: MediaQuery.of(context).size.width * 0.3,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            flex: 8,
+            child: FittedBox(
+              child: Text(
+                moneyAmount,
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ),
+          Spacer(),
+          Flexible(
+            flex: 2,
+            child: CircularCheckBox(
+              onChanged: onChanged,
+              value: value,
+              activeColor: color,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
