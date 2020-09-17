@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wisebu/screens/OpenScreen.dart';
+import 'package:wisebu/screens/SplashScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         accentColor: Color(0xFFF3C623),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: OpenScreen(),
+      home: SplashScreen(),
     );
   }
 }

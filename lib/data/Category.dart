@@ -1,15 +1,24 @@
 import 'package:flutter/cupertino.dart';
 
 class Category {
+  int id;
   String title;
   String type; // income or expense
-  double value;
-  bool doShow;
+  int doShow;
 
   Category({
+    this.id,
     @required this.title,
     @required this.type,
-    @required this.value,
     @required this.doShow,
   });
+
+  Map<String, dynamic> categoryToMap() {
+    return {
+      'id': id,
+      'title': title,
+      'type': type,
+      'doShow': doShow,
+    };
+  }
 }

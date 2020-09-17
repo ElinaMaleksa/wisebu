@@ -42,14 +42,13 @@ class OpenScreen extends StatelessWidget {
             child: yellowButton(
                 context: context,
                 isLarge: true,
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => SetupScreen(
-                        appBarTitle: addIncomesTitle,
-                        buttonText: "Next",
-                        color: Theme.of(context).primaryColor,
-                      ),
+                onPressed: () async {
+                  pushReplacement(
+                    context: context,
+                    nextScreen: SetupScreen(
+                      type: incomeType,
+                      buttonText: "Next",
+                      color: Theme.of(context).primaryColor,
                     ),
                   );
                 },

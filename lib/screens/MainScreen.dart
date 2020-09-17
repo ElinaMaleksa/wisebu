@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
+import 'package:wisebu/screens/DetailsScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
 class MainScreen extends StatefulWidget {
@@ -11,6 +12,20 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   PageController controller = PageController(initialPage: 999);
   bool showDateForward = true;
+  final String incomesTitle = "Incomes";
+  double totalIncomes = 0;
+  double totalExpenses = 0;
+
+  // List<Category> showIncomesList = incomes.where((income) => income.doShow == true).toList();
+
+  //List<Category> showExpensesList = expenses.where((expense) => expense.doShow == true).toList();
+
+  @override
+  void initState() {
+    // for (var i in showIncomesList) totalIncomes = totalIncomes + i.amount;
+    // for (var i in showExpensesList) totalExpenses = totalExpenses + i.amount;
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -113,7 +128,7 @@ class MainScreenState extends State<MainScreen> {
                     ListTile(
                       visualDensity:
                           VisualDensity(horizontal: -4, vertical: -4),
-                      title: Text("400 €"),
+                      title: Text("$totalIncomes €"),
                       leading: Container(
                         color: Theme.of(context).primaryColor,
                         width: 20,
@@ -125,7 +140,7 @@ class MainScreenState extends State<MainScreen> {
                     ListTile(
                       visualDensity:
                           VisualDensity(horizontal: -4, vertical: -4),
-                      title: Text("220 €"),
+                      title: Text("$totalExpenses €"),
                       leading: Container(
                         color: Theme.of(context).accentColor,
                         width: 20,
@@ -147,7 +162,7 @@ class MainScreenState extends State<MainScreen> {
                       Expanded(
                         child: FittedBox(
                           child: Text(
-                            "180 €",
+                            "${totalIncomes - totalExpenses} €",
                             style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold),
@@ -167,7 +182,7 @@ class MainScreenState extends State<MainScreen> {
         ),
         categoryData(
             context: context,
-            title: "Incomes",
+            title: incomesTitle,
             dataList: incomes,
             color: Theme.of(context).primaryColor),
         categoryData(
@@ -187,8 +202,8 @@ class MainScreenState extends State<MainScreen> {
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 10),
-          height: 70,
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          height: 60,
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
@@ -199,6 +214,7 @@ class MainScreenState extends State<MainScreen> {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 title,
@@ -206,10 +222,10 @@ class MainScreenState extends State<MainScreen> {
                   fontSize: 18,
                 ),
               ),
-              Icon(
-                Icons.add_circle,
-                size: 35,
-                color: color,
+              IconButton(
+                visualDensity: VisualDensity(horizontal: -4),
+                onPressed: () {},
+                icon: Icon(Icons.add_circle, size: 35, color: color),
               ),
             ],
           ),
@@ -219,13 +235,26 @@ class MainScreenState extends State<MainScreen> {
           shrinkWrap: true,
           itemCount: dataList.length,
           itemBuilder: (context, index) {
-            return listTile(
-                context: context,
-                title: dataList[index].title,
-                moneyAmount: "${dataList[index].value.toString()} €",
-                color: color,
-                onChanged: (value) {},
-                value: true);
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: listTileMainScreen(
+                  context: context,
+                  showIcon: title == incomesTitle ? false : true,
+                  title: "Category first",
+                  //dataList[index].,
+                  moneyAmount: "200000",
+                  //"${dataList[index].amount.toString()} €",
+                  color: color,
+                  onPressed: () {
+                    if (title != incomesTitle)
+                      push(
+                        context: context,
+                        nextScreen: DetailsScreen(
+                          title: "aaa", //dataList[index].title,
+                        ),
+                      );
+                  }),
+            );
           },
         ),
       ],

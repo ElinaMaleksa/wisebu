@@ -1,148 +1,167 @@
-import 'package:circular_check_box/circular_check_box.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wisebu/data/Category.dart';
+import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
 class SetupScreen extends StatefulWidget {
-  final String buttonText, appBarTitle;
+  final String buttonText, type;
   final Color color;
 
   SetupScreen(
-      {@required this.buttonText,
-      @required this.color,
-      @required this.appBarTitle});
+      {@required this.buttonText, @required this.color, @required this.type});
 
   @override
   State<StatefulWidget> createState() => SetupScreenState();
 }
 
 class SetupScreenState extends State<SetupScreen> {
+  TextEditingController dialogTitleController = TextEditingController();
+  TextEditingController dialogAmountController = TextEditingController();
+  Future<List<Category>> getCategoriesFromFuture;
   bool isExpenses;
+
+  Future<List<Category>> dbGetCategories() async {
+    return await dbGetCategoriesByType(widget.type);
+  }
 
   @override
   void initState() {
-    if (widget.appBarTitle == addExpensesTitle)
+    if (widget.type == expenseType)
       isExpenses = true;
     else
       isExpenses = false;
+
+    getCategoriesFromFuture = dbGetCategories();
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.appBarTitle),
-        // disable going back from appBar
-        automaticallyImplyLeading: false,
-      ),
-      body: ListView(
-        children: [
-          ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: isExpenses ? expenses.length : incomes.length,
-            itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey[350],
-                      width: 1,
-                    ),
-                  ),
+    return FutureBuilder<List<Category>>(
+        // get categories by type
+        future: getCategoriesFromFuture,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<Category>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
                 ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.only(left: 0.0, right: 15),
-                  title: Text(
-                    isExpenses
-                        ? '${expenses[index].title}'
-                        : '${incomes[index].title}',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  leading: Container(
-                    color: widget.color,
-                    width: 20,
-                  ),
-                  trailing: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.3,
-                    child: Row(
-                      children: [
-                        Text(
-                          isExpenses
-                              ? "${expenses[index].value} €"
-                              : "${incomes[index].value} €",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        Spacer(),
-                        CircularCheckBox(
-                          onChanged: (value) {
-                            setState(() {
-                              if (isExpenses)
-                                expenses[index].doShow =
-                                    !expenses[index].doShow;
-                              else
-                                incomes[index].doShow = !incomes[index].doShow;
-                            });
+              );
+            default:
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text(isExpenses ? addExpensesTitle : addIncomesTitle),
+                  // disable going back from appBar
+                  automaticallyImplyLeading: !isExpenses ? false : true,
+                ),
+                body: Padding(
+                  padding: EdgeInsets.only(right: 20),
+                  child: ListView(
+                    children: [
+                      ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey[350],
+                                  width: 1,
+                                ),
+                                left: BorderSide(
+                                  color: widget.color,
+                                  width: 20,
+                                ),
+                              ),
+                            ),
+                            child: InkWell(
+                              onTap: () {
+                                dialogTitleController.text =
+                                    snapshot.data[index].title;
+
+                                /*dialogAmountController.text = isExpenses
+                            ? expenses[index].amount.toString()
+                            : incomes[index].amount.toString();*/
+
+                                if (snapshot.data[index].doShow == 0)
+                                  alertDialog(
+                                      context: context,
+                                      title: isExpenses
+                                          ? "Add expense"
+                                          : "Add income",
+                                      labelText:
+                                          isExpenses ? "Expense" : "Income",
+                                      titleController: dialogTitleController,
+                                      amountController: dialogAmountController,
+                                      onPressedOk: () {
+                                        setState(() {
+                                          snapshot.data[index].title =
+                                              dialogTitleController
+                                                      .text.isNotEmpty
+                                                  ? dialogTitleController.text
+                                                  : "Income";
+                                        });
+
+                                        Navigator.pop(context);
+                                      });
+                              },
+                              child: ListTile(
+                                title: Text(
+                                  snapshot.data[index].title,
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                trailing: Icon(
+                                  snapshot.data[index].doShow == 1
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  color: widget.color,
+                                  size: 35,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 20),
+                        child: addNewItem(
+                            text: "Add category",
+                            color: widget.color,
+                            onPressed: () {}),
+                      ),
+                      Container(
+                        margin: EdgeInsets.all(20),
+                        alignment: Alignment.bottomRight,
+                        child: yellowButton(
+                          context: context,
+                          onPressed: () {
+                            if (isExpenses)
+                              push(context: context, nextScreen: MainScreen());
+                            else
+                              push(
+                                context: context,
+                                nextScreen: SetupScreen(
+                                  type: expenseType,
+                                  buttonText: "Finish",
+                                  color: Theme.of(context).accentColor,
+                                ),
+                              );
                           },
-                          value: isExpenses
-                              ? expenses[index].doShow
-                              : incomes[index].doShow,
-                          activeColor: widget.color,
+                          text: widget.buttonText,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
-            },
-          ),
-          ListTile(
-            contentPadding: EdgeInsets.only(left: 0.0, right: 15),
-            title: Text(
-              "Add category",
-              style: TextStyle(fontSize: 18, color: Colors.grey[500]),
-            ),
-            leading: SizedBox(width: 20),
-            trailing: IconButton(
-              icon: Icon(
-                Icons.add_circle,
-                size: 30,
-              ),
-              color: widget.color,
-              onPressed: () {},
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.all(20),
-            alignment: Alignment.bottomRight,
-            child: yellowButton(
-              context: context,
-              onPressed: () {
-                if (isExpenses)
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => MainScreen(),
-                    ),
-                  );
-                else
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => SetupScreen(
-                        appBarTitle: addExpensesTitle,
-                        buttonText: "Finish",
-                        color: Theme.of(context).accentColor,
-                      ),
-                    ),
-                  );
-              },
-              text: widget.buttonText,
-            ),
-          ),
-        ],
-      ),
-    );
+          }
+        });
   }
 }
