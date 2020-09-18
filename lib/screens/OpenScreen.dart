@@ -1,6 +1,7 @@
 import 'package:clippy_flutter/arc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/screens/SetupScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
@@ -8,6 +9,8 @@ class OpenScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // to prevent exception from keyboard
+      resizeToAvoidBottomPadding: false,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -42,7 +45,7 @@ class OpenScreen extends StatelessWidget {
             child: yellowButton(
                 context: context,
                 isLarge: true,
-                onPressed: () async {
+                onPressed: () {
                   pushReplacement(
                     context: context,
                     nextScreen: SetupScreen(

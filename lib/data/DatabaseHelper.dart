@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:wisebu/data/Category.dart';
+import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
 Database db;
@@ -24,19 +26,10 @@ void createDb(Database db) {
         $columnId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, 
         $columnTitle TEXT NOT NULL, 
         $columnType TEXT NOT NULL, 
-        $columnDoShow INT NOT NULL
+        $columnDate TEXT NOT NULL,
+        $columnAmount REAL NOT NULL
         )
        ''');
-  db.execute('''
-      CREATE TABLE $tableRecords(
-      $columnId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-      $columnCategoryId INTEGER NOT NULL,
-      $columnTitle TEXT NOT NULL,
-      $columnAmount REAL NOT NULL,
-      $columnDate TEXT NOT NULL,
-      FOREIGN KEY ($columnCategoryId) REFERENCES $tableCategories(id)
-      )
-      ''');
 }
 
 Future<Database> initializeDatabase() async {
@@ -51,7 +44,9 @@ Future<Database> initializeDatabase() async {
   return database;
 }
 
-Future<void> dbInsertCategories() async {
+Future<void> dbInsertCategories(
+    {@required List<Category> incomes,
+    @required List<Category> expenses}) async {
   db = await initializeDatabase();
   Future<void> insertCategory(Category category) async {
     await db.insert(
@@ -74,7 +69,10 @@ Future<List<Category>> dbGetCategoriesByType(String type) async {
   List<String> whereArgument = [type];
 
   final List<Map<String, dynamic>> maps = await db.query('$tableCategories',
-      where: whereStatement, whereArgs: whereArgument);
+      where: whereStatement,
+      whereArgs: whereArgument,
+      orderBy: "$columnDate ASC",
+      groupBy: "$columnTitle");
 
   // Convert the List<Map<String, dynamic> into a List<Category>
   return List.generate(maps.length, (i) {
@@ -82,7 +80,20 @@ Future<List<Category>> dbGetCategoriesByType(String type) async {
       id: maps[i]['$columnId'],
       title: maps[i]['$columnTitle'],
       type: maps[i]['$columnType'],
-      doShow: maps[i]['$columnDoShow'],
+      date: maps[i]['$columnDate'],
+      amount: maps[i]['$columnAmount'],
     );
   });
+}
+
+/*
+SELECT sum(amount) FROM categories
+WHERE title = "Groceries"
+GROUP BY title*/
+
+Future calculateTotal(String title) async {
+  initializeDatabase();
+  var result = await db.rawQuery(
+      "SELECT SUM($columnAmount) FROM $tableCategories WHERE $columnTitle = \"$title\" AND $columnType = \"$expenseType\" GROUP BY $columnTitle");
+  print(result.toList());
 }

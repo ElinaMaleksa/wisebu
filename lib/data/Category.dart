@@ -4,13 +4,15 @@ class Category {
   int id;
   String title;
   String type; // income or expense
-  int doShow;
+  String date;
+  double amount;
 
   Category({
     this.id,
     @required this.title,
     @required this.type,
-    @required this.doShow,
+    @required this.date,
+    @required this.amount,
   });
 
   Map<String, dynamic> categoryToMap() {
@@ -18,7 +20,8 @@ class Category {
       'id': id,
       'title': title,
       'type': type,
-      'doShow': doShow,
+      'date': date,
+      'amount': amount,
     };
   }
 }

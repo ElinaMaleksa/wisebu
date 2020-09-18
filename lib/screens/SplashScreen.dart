@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/screens/OpenScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
@@ -38,12 +37,9 @@ class SplashScreenState extends State<SplashScreen> {
   Future checkFirstSeen() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool firstOpen = (prefs.getBool('firstOpen') ?? true);
-
     // TODO: uncomment this code
-    /* if (firstOpen) {
-      // insert categories in db on app start
-      dbInsertCategories().then(
-          (_) => pushReplacement(context: context, nextScreen: OpenScreen()));
+    /*if (firstOpen) {
+      pushReplacement(context: context, nextScreen: OpenScreen());
       await prefs.setBool('firstOpen', false);
     } else
       pushReplacement(context: context, nextScreen: MainScreen());*/

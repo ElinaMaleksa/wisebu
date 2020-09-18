@@ -7,24 +7,26 @@ import 'package:wisebu/widgets/Widgets.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String title;
+  final List<Category> list;
 
-  DetailsScreen({@required this.title});
+  DetailsScreen({@required this.title, @required this.list});
 
   @override
   State<StatefulWidget> createState() => DetailsScreenState();
 }
 
 class DetailsScreenState extends State<DetailsScreen> {
-  List<Category> categoryList = [];
+  List<Category> itemsList = [];
   double total = 0;
 
   @override
   void initState() {
-    for (var i in expenses)
-      if (i.title == widget.title) {
-        categoryList.add(i);
-        // total = total + i.amount;
+    widget.list.forEach((item) {
+      if (item.title == widget.title) {
+        total = total + item.amount;
+        itemsList.add(item);
       }
+    });
     super.initState();
   }
 
@@ -75,7 +77,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                 ListView.builder(
                     physics: NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
-                    itemCount: categoryList.length,
+                    itemCount: itemsList.length,
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -90,14 +92,14 @@ class DetailsScreenState extends State<DetailsScreen> {
                             ),
                           ),
                           child: ListTile(
-                            title: Text("Hello"
-                                /* DateFormat('dd/MM/yyyy').format(
-                                DateTime.parse(categoryList[index].date),
-                              ),*/
-                                ),
-                            trailing: Text("Hey"
-                                // "${categoryList[index].amount.toString()} €",
-                                ),
+                            title: Text(
+                              DateFormat('dd/MM/yyyy').format(
+                                DateTime.parse(itemsList[index].date),
+                              ),
+                            ),
+                            trailing: Text(
+                              "${itemsList[index].amount} €",
+                            ),
                           ),
                         ),
                       );

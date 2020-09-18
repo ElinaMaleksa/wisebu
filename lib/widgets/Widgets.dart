@@ -1,58 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:wisebu/data/Category.dart';
-
-final String addExpensesTitle = "Create expense\'s categories";
-final String addIncomesTitle = "Add incomes for current month";
-
-final String expenseType = "Expense";
-final String incomeType = "Income";
-
-List<Category> incomes = [
-  Category(
-    title: "Salary",
-    type: incomeType,
-    doShow: 0,
-  ),
-  Category(
-    title: "Scholarship",
-    type: incomeType,
-    doShow: 0,
-  ),
-];
-
-List<Category> expenses = [
-  Category(
-    title: "Home/rent",
-    type: expenseType,
-    doShow: 0,
-  ),
-  Category(
-    title: "Groceries",
-    type: expenseType,
-    doShow: 0,
-  ),
-  Category(
-    title: "Groceries",
-    type: expenseType,
-    doShow: 0,
-  ),
-  Category(
-    title: "Transportation",
-    type: expenseType,
-    doShow: 0,
-  ),
-  Category(
-    title: "Entertainment",
-    type: expenseType,
-    doShow: 0,
-  ),
-  Category(
-    title: "Bills",
-    type: expenseType,
-    doShow: 0,
-  ),
-];
 
 Widget yellowButton(
     {@required BuildContext context,
@@ -190,7 +137,7 @@ Future<dynamic> alertDialog({
   @required onPressedOk,
   String title,
   String categoryName,
-  String labelText,
+  String hintText,
   @required TextEditingController titleController,
   @required TextEditingController amountController,
 }) {
@@ -199,7 +146,7 @@ Future<dynamic> alertDialog({
     child: AlertDialog(
       title: Text(title ?? ""),
       content: Container(
-        height: MediaQuery.of(context).size.height * 0.25,
+        height: MediaQuery.of(context).size.height * 0.2,
         width: MediaQuery.of(context).size.height * 0.7,
         child: Column(
           children: [
@@ -208,7 +155,7 @@ Future<dynamic> alertDialog({
               child: TextField(
                 controller: titleController,
                 decoration: InputDecoration(
-                  labelText: labelText ?? "",
+                  hintText: hintText ?? "",
                 ),
                 maxLength: 30,
               ),
@@ -218,7 +165,7 @@ Future<dynamic> alertDialog({
               child: TextField(
                 controller: amountController,
                 decoration: InputDecoration(
-                    labelText: "Amount",
+                    hintText: "Amount",
                     suffixIcon: Icon(Icons.euro_symbol, size: 15)),
                 keyboardType: TextInputType.numberWithOptions(
                   decimal: true,
