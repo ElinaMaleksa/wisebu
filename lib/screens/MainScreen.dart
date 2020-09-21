@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
+import 'package:wisebu/screens/AddRecordScreen.dart';
 import 'package:wisebu/screens/DetailsScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
@@ -14,7 +15,6 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   PageController pageController = PageController(initialPage: 999);
   Future<List<Category>> futureIncomeList, futureExpenseList;
-  Future<String> futureTotal;
   bool showDateForward = true;
   double totalIncomes = 0;
   double totalExpenses = 0;
@@ -30,6 +30,8 @@ class MainScreenState extends State<MainScreen> {
   @override
   void dispose() {
     pageController.dispose();
+    dialogTitleController.dispose();
+    dialogTitleController.dispose();
     super.dispose();
   }
 
@@ -51,29 +53,28 @@ class MainScreenState extends State<MainScreen> {
               headerHeight: 0.08,
               arrowSize: 0.05),
           Expanded(
-              child: PageView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                controller: pageController,
-                itemBuilder: (context, position) {
-                  return SingleChildScrollView(child: content(context));
-                },
-              )),
+            child: PageView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              controller: pageController,
+              itemBuilder: (context, position) {
+                return SingleChildScrollView(child: content(context));
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget header({context,
-    showDateForward,
-    changeText(showDateForward),
-    String text,
-    double headerHeight,
-    double arrowSize}) {
+  Widget header(
+      {context,
+      showDateForward,
+      changeText(showDateForward),
+      String text,
+      double headerHeight,
+      double arrowSize}) {
     return Container(
-      height: MediaQuery
-          .of(context)
-          .size
-          .height * headerHeight,
+      height: MediaQuery.of(context).size.height * headerHeight,
       color: Colors.grey[200],
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -83,25 +84,17 @@ class MainScreenState extends State<MainScreen> {
             highlightColor: Colors.transparent,
             padding: EdgeInsets.only(left: 10),
             icon: Icon(Icons.arrow_back_ios,
-                size: MediaQuery
-                    .of(context)
-                    .size
-                    .width * arrowSize),
-            color: Theme
-                .of(context)
-                .primaryColor,
+                size: MediaQuery.of(context).size.width * arrowSize),
+            color: Theme.of(context).primaryColor,
             onPressed: () =>
-            {showDateForward = false, changeText(showDateForward)},
+                {showDateForward = false, changeText(showDateForward)},
           ),
           Text(
             text,
             style: TextStyle(
               color: Colors.black,
               fontSize:
-              MediaQuery
-                  .of(context)
-                  .size
-                  .height * headerHeight * 0.35,
+                  MediaQuery.of(context).size.height * headerHeight * 0.35,
             ),
           ),
           IconButton(
@@ -109,15 +102,10 @@ class MainScreenState extends State<MainScreen> {
             highlightColor: Colors.transparent,
             padding: EdgeInsets.only(right: 10),
             icon: Icon(Icons.arrow_forward_ios,
-                size: MediaQuery
-                    .of(context)
-                    .size
-                    .width * arrowSize),
-            color: Theme
-                .of(context)
-                .primaryColor,
+                size: MediaQuery.of(context).size.width * arrowSize),
+            color: Theme.of(context).primaryColor,
             onPressed: () =>
-            {showDateForward = true, changeText(showDateForward)},
+                {showDateForward = true, changeText(showDateForward)},
           )
         ],
       ),
@@ -131,10 +119,7 @@ class MainScreenState extends State<MainScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height * 0.2,
+          height: MediaQuery.of(context).size.height * 0.2,
           padding: EdgeInsets.all(10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -145,12 +130,10 @@ class MainScreenState extends State<MainScreen> {
                   children: [
                     ListTile(
                       visualDensity:
-                      VisualDensity(horizontal: -4, vertical: -4),
+                          VisualDensity(horizontal: -4, vertical: -4),
                       title: Text("$totalIncomes €"),
                       leading: Container(
-                        color: Theme
-                            .of(context)
-                            .primaryColor,
+                        color: Theme.of(context).primaryColor,
                         width: 20,
                       ),
                     ),
@@ -159,12 +142,10 @@ class MainScreenState extends State<MainScreen> {
                     ),
                     ListTile(
                       visualDensity:
-                      VisualDensity(horizontal: -4, vertical: -4),
+                          VisualDensity(horizontal: -4, vertical: -4),
                       title: Text("$totalExpenses €"),
                       leading: Container(
-                        color: Theme
-                            .of(context)
-                            .accentColor,
+                        color: Theme.of(context).accentColor,
                         width: 20,
                       ),
                     ),
@@ -173,9 +154,7 @@ class MainScreenState extends State<MainScreen> {
               ),
               CircleAvatar(
                 radius: 65,
-                backgroundColor: Theme
-                    .of(context)
-                    .primaryColor,
+                backgroundColor: Theme.of(context).primaryColor,
                 child: Container(
                   padding: EdgeInsets.all(20),
                   alignment: Alignment.center,
@@ -208,51 +187,67 @@ class MainScreenState extends State<MainScreen> {
             context: context,
             title: incomeType,
             dataList: incomeList,
-            color: Theme
-                .of(context)
-                .primaryColor),
+            typeColor: Theme.of(context).primaryColor),
+        SizedBox(height: 10),
         categoryData(
             context: context,
             title: expenseType,
             dataList: expenseList,
-            color: Theme
-                .of(context)
-                .accentColor)
+            typeColor: Theme.of(context).accentColor)
       ],
     );
   }
 
-  Widget categoryData({@required BuildContext context,
-    @required String title,
-    @required List<Category> dataList,
-    @required Color color}) {
+  Widget categoryData(
+      {@required BuildContext context,
+      @required String title,
+      @required List<Category> dataList,
+      @required Color typeColor}) {
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-          height: 60,
+          padding: EdgeInsets.symmetric(horizontal: 25),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: color,
+                color: typeColor,
                 width: 3,
               ),
             ),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: typeColor,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
-              IconButton(
-                visualDensity: VisualDensity(horizontal: -4),
-                onPressed: () {},
-                icon: Icon(Icons.add_circle, size: 35, color: color),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.15,
+                child: IconButton(
+                  visualDensity: VisualDensity(horizontal: -4),
+                  onPressed: () {
+                    dialogTitleController.clear();
+                    dialogAmountController.clear();
+
+                    alertDialogFields(
+                      context: context,
+                      title:
+                          title == expenseType ? "Add expense" : "Add income",
+                      hintText: title == expenseType ? "Expense" : "Income",
+                      titleController: dialogTitleController,
+                      amountController: dialogAmountController,
+                      onPressedOk: () {
+                        // TODO: insert category item in db
+                      },
+                    );
+                  },
+                  icon: Icon(Icons.add_circle, size: 35, color: typeColor),
+                ),
               ),
             ],
           ),
@@ -266,20 +261,53 @@ class MainScreenState extends State<MainScreen> {
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: listTileMainScreen(
                   context: context,
-                  showIcon: title == incomeType ? false : true,
+                  isExpense: title == incomeType ? false : true,
                   title: dataList[index].title,
-                  moneyAmount: "${calcTotal(dataList[index].title)}",
-                  //"${dataList[index].amount.toString()} €",
-                  color: color,
-                  onPressed: () {
-                    if (title != incomeType)
+                  moneyAmount: "${dataList[index].amount} €",
+                  color: typeColor,
+                  onIconPressed: () {
+                    if (title == expenseType)
+                      push(
+                        context: context,
+                        nextScreen: AddRecordScreen(),
+                      );
+                  },
+                  onTitlePressed: () {
+                    if (title == expenseType)
                       push(
                         context: context,
                         nextScreen: DetailsScreen(
                           title: dataList[index].title,
-                          list: expenseList,
                         ),
                       );
+                    else {
+                      setState(() {
+                        dialogTitleController.text = dataList[index].title;
+                        dialogAmountController.text =
+                            dataList[index].amount.toString();
+                      });
+                      alertDialogFields(
+                        context: context,
+                        title: "Edit income",
+                        hintText: "Income",
+                        titleController: dialogTitleController,
+                        amountController: dialogAmountController,
+                        onPressedOk: () {
+                          // TODO: update item in db
+                        },
+                      );
+                    }
+                  },
+                  onLongPressed: () {
+                    alertDialogDelete(
+                      context: context,
+                      title: "Delete?",
+                      contentText:
+                          "\"${dataList[index].title}\" will be removed from $title category forever.",
+                      onPressedOk: () {
+                        // TODO: delete all rows where category = ? in db
+                      },
+                    );
                   }),
             );
           },
@@ -290,17 +318,6 @@ class MainScreenState extends State<MainScreen> {
 
   Future<List<Category>> dbGetCategories(type) async {
     return await dbGetCategoriesByType(type);
-  }
-
-  Future<String> calc(title) async {
-    return await calculateTotal(title);
-  }
-
-  List<String> calcTotal(title) {
-    futureTotal = calc(title);
-    futureTotal.then((value) {
-      // print(value);
-    });
   }
 
   void setData() {

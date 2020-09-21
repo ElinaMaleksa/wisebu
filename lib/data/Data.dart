@@ -35,11 +35,6 @@ List<Category> expenses = [
       date: dateWithZeroTime(DateTime.now()).toString(),
       amount: 0),
   Category(
-      title: "Groceries",
-      type: expenseType,
-      date: dateWithZeroTime(DateTime.now()).toString(),
-      amount: 0),
-  Category(
       title: "Transportation",
       type: expenseType,
       date: dateWithZeroTime(DateTime.now()).toString(),

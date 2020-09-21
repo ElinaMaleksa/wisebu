@@ -22,9 +22,6 @@ class SetupScreen extends StatefulWidget {
 }
 
 class SetupScreenState extends State<SetupScreen> {
-  TextEditingController dialogTitleController = TextEditingController();
-  TextEditingController dialogAmountController = TextEditingController();
-
   bool isExpenses;
   List<Category> itemsList = [];
   List<Category> selectedIncomes = [];
@@ -44,6 +41,13 @@ class SetupScreenState extends State<SetupScreen> {
   }
 
   @override
+  void dispose() {
+    dialogTitleController.dispose();
+    dialogAmountController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -51,11 +55,11 @@ class SetupScreenState extends State<SetupScreen> {
         // disable going back from appBar
         automaticallyImplyLeading: !isExpenses ? false : true,
       ),
-      body: Padding(
-        padding: EdgeInsets.only(right: 20),
-        child: ListView(
-          children: [
-            ListView.builder(
+      body: ListView(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(right: 20),
+            child: ListView.builder(
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: itemsList.length,
@@ -78,10 +82,12 @@ class SetupScreenState extends State<SetupScreen> {
                       dialogTitleController.text = itemsList[index].title;
 
                       dialogAmountController.text =
-                          itemsList[index].amount.toString();
+                          itemsList[index].amount == 0.0
+                              ? ""
+                              : itemsList[index].amount.toString();
 
                       if (!isSelected(index)) {
-                        alertDialog(
+                        alertDialogFields(
                             context: context,
                             title: isExpenses ? "Add expense" : "Add income",
                             hintText: isExpenses ? "Expense" : "Income",
@@ -161,71 +167,71 @@ class SetupScreenState extends State<SetupScreen> {
                 );
               },
             ),
-            Padding(
-              padding: EdgeInsets.only(left: 20),
-              child: addNewItem(
-                text: "Add category",
-                color: widget.color,
-                onPressed: () {
-                  setState(() {
-                    dialogTitleController.text = "";
-                    dialogAmountController.text = "";
-                  });
-                  alertDialog(
-                      context: context,
-                      title: isExpenses ? "Add expense" : "Add income",
-                      hintText: isExpenses ? "Expense" : "Income",
-                      titleController: dialogTitleController,
-                      amountController: dialogAmountController,
-                      onPressedOk: () {
-                        setState(() {
-                          Category item = Category(
-                              title: dialogTitleController.text.isNotEmpty
-                                  ? dialogTitleController.text
-                                  : "Income",
-                              type: isExpenses ? expenseType : incomeType,
-                              date: dateWithZeroTime(DateTime.now()).toString(),
-                              amount: dialogAmountController.text.isNotEmpty
-                                  ? double.parse(dialogAmountController.text)
-                                  : 0);
-                          itemsList.add(item);
-                          isExpenses
-                              ? selectedExpenses.add(item)
-                              : selectedIncomes.add(item);
-                        });
-                        Navigator.pop(context);
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: addNewItem(
+              text: "Add category",
+              color: widget.color,
+              onPressed: () {
+                setState(() {
+                  dialogTitleController.text = "";
+                  dialogAmountController.text = "";
+                });
+                alertDialogFields(
+                    context: context,
+                    title: isExpenses ? "Add expense" : "Add income",
+                    hintText: isExpenses ? "Expense" : "Income",
+                    titleController: dialogTitleController,
+                    amountController: dialogAmountController,
+                    onPressedOk: () {
+                      setState(() {
+                        Category item = Category(
+                            title: dialogTitleController.text.isNotEmpty
+                                ? dialogTitleController.text
+                                : "Income",
+                            type: isExpenses ? expenseType : incomeType,
+                            date: dateWithZeroTime(DateTime.now()).toString(),
+                            amount: dialogAmountController.text.isNotEmpty
+                                ? double.parse(dialogAmountController.text)
+                                : 0);
+                        itemsList.add(item);
+                        isExpenses
+                            ? selectedExpenses.add(item)
+                            : selectedIncomes.add(item);
                       });
-                },
-              ),
+                      Navigator.pop(context);
+                    });
+              },
             ),
-            Container(
-              margin: EdgeInsets.all(20),
-              alignment: Alignment.bottomRight,
-              child: yellowButton(
-                context: context,
-                onPressed: () {
-                  if (isExpenses) {
-                    dbInsertCategories(
-                            incomes: widget.incomesList,
-                            expenses: selectedExpenses)
-                        .then((value) =>
-                            push(context: context, nextScreen: MainScreen()));
-                  } else
-                    push(
-                      context: context,
-                      nextScreen: SetupScreen(
-                        type: expenseType,
-                        incomesList: selectedIncomes,
-                        buttonText: "Finish",
-                        color: Theme.of(context).accentColor,
-                      ),
-                    );
-                },
-                text: widget.buttonText,
-              ),
+          ),
+          Container(
+            margin: EdgeInsets.all(20),
+            alignment: Alignment.bottomRight,
+            child: yellowButton(
+              context: context,
+              onPressed: () {
+                if (isExpenses) {
+                  dbInsertCategories(
+                          incomes: widget.incomesList,
+                          expenses: selectedExpenses)
+                      .then((value) =>
+                          push(context: context, nextScreen: MainScreen()));
+                } else
+                  push(
+                    context: context,
+                    nextScreen: SetupScreen(
+                      type: expenseType,
+                      incomesList: selectedIncomes,
+                      buttonText: "Finish",
+                      color: Theme.of(context).accentColor,
+                    ),
+                  );
+              },
+              text: widget.buttonText,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

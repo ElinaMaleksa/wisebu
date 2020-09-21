@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+TextEditingController dialogTitleController = TextEditingController();
+TextEditingController dialogAmountController = TextEditingController();
+
 Widget yellowButton(
     {@required BuildContext context,
     @required onPressed,
@@ -31,8 +34,10 @@ Widget listTileMainScreen(
     @required String title,
     @required String moneyAmount,
     @required Color color,
-    @required onPressed,
-    @required bool showIcon}) {
+    @required onTitlePressed,
+    @required onLongPressed,
+    onIconPressed,
+    @required bool isExpense}) {
   return Container(
     decoration: BoxDecoration(
       border: Border(
@@ -42,43 +47,56 @@ Widget listTileMainScreen(
         ),
       ),
     ),
-    child: ListTile(
-      visualDensity: VisualDensity(vertical: -2),
-      contentPadding: EdgeInsets.only(left: 0, right: 0),
-      title: Text(
-        title,
-        style: TextStyle(fontSize: 18),
-      ),
-      trailing: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.3,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              flex: 6,
-              child: FittedBox(
-                child: Text(
-                  moneyAmount,
-                  style: TextStyle(fontSize: 18),
+    child: InkWell(
+      onTap: isExpense ? null : onTitlePressed,
+      onLongPress: isExpense ? null : onLongPressed,
+      child: ListTile(
+        visualDensity: VisualDensity(vertical: -2),
+        contentPadding: EdgeInsets.only(left: 5, right: 5),
+        title: InkWell(
+          onTap: isExpense ? onTitlePressed : null,
+          onLongPress: isExpense ? onLongPressed : null,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.85,
+            height: 30,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  flex: 6,
+                  child: FittedBox(
+                    child: Text(
+                      title,
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
                 ),
-              ),
+                Flexible(
+                  flex: 4,
+                  child: FittedBox(
+                    child: Text(
+                      moneyAmount,
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Spacer(),
-            Flexible(
-              flex: 4,
-              child: showIcon
-                  ? IconButton(
-                      visualDensity: VisualDensity(horizontal: -4),
-                      onPressed: onPressed,
-                      icon: Icon(
-                        Icons.add_circle_outline,
-                        color: color,
-                        size: 35,
-                      ),
-                    )
-                  : Container(),
-            ),
-          ],
+          ),
+        ),
+        trailing: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.15,
+          child: isExpense
+              ? IconButton(
+                  visualDensity: VisualDensity(horizontal: -4),
+                  onPressed: isExpense ? onIconPressed : null,
+                  icon: Icon(
+                    Icons.add_circle_outline,
+                    color: color,
+                    size: 35,
+                  ),
+                )
+              : Container(),
         ),
       ),
     ),
@@ -132,19 +150,17 @@ Widget addNewItem(
   );
 }
 
-Future<dynamic> alertDialog({
-  @required BuildContext context,
-  @required onPressedOk,
-  String title,
-  String categoryName,
-  String hintText,
-  @required TextEditingController titleController,
-  @required TextEditingController amountController,
-}) {
+Future<dynamic> alertDialogFields(
+    {@required BuildContext context,
+    @required onPressedOk,
+    String title,
+    String hintText,
+    @required TextEditingController titleController,
+    @required TextEditingController amountController}) {
   return showDialog(
     context: context,
     child: AlertDialog(
-      title: Text(title ?? ""),
+      title: Text(title ?? "", style: TextStyle(fontSize: 18)),
       content: Container(
         height: MediaQuery.of(context).size.height * 0.2,
         width: MediaQuery.of(context).size.height * 0.7,
@@ -178,6 +194,32 @@ Future<dynamic> alertDialog({
           ],
         ),
       ),
+      actions: [
+        FlatButton(child: Text("Ok"), onPressed: onPressedOk),
+        FlatButton(
+          child: Text("Cancel"),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ],
+    ),
+  );
+}
+
+Future<dynamic> alertDialogDelete(
+    {@required BuildContext context,
+    @required onPressedOk,
+    @required String title,
+    @required String contentText}) {
+  return showDialog(
+    context: context,
+    child: AlertDialog(
+      title: Text(
+        title ?? "",
+        style: TextStyle(fontSize: 18),
+      ),
+      content: Text(contentText),
       actions: [
         FlatButton(child: Text("Ok"), onPressed: onPressedOk),
         FlatButton(
