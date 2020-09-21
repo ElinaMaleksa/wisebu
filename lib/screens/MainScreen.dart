@@ -30,38 +30,40 @@ class MainScreenState extends State<MainScreen> {
   @override
   void dispose() {
     pageController.dispose();
-    dialogTitleController.dispose();
-    dialogTitleController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("BUDGET"),
-        // disable going back from appBar
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
-        children: [
-          header(
-              context: context,
-              showDateForward: showDateForward,
-              changeText: changeText,
-              text: 'September, 2020',
-              headerHeight: 0.08,
-              arrowSize: 0.05),
-          Expanded(
-            child: PageView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              controller: pageController,
-              itemBuilder: (context, position) {
-                return SingleChildScrollView(child: content(context));
-              },
+    return WillPopScope(
+      // disable going back
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("BUDGET"),
+          // do not show leading back icon in appBar
+          automaticallyImplyLeading: false,
+        ),
+        body: Column(
+          children: [
+            header(
+                context: context,
+                showDateForward: showDateForward,
+                changeText: changeText,
+                text: 'September, 2020',
+                headerHeight: 0.08,
+                arrowSize: 0.05),
+            Expanded(
+              child: PageView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                controller: pageController,
+                itemBuilder: (context, position) {
+                  return SingleChildScrollView(child: content(context));
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -86,8 +88,10 @@ class MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.arrow_back_ios,
                 size: MediaQuery.of(context).size.width * arrowSize),
             color: Theme.of(context).primaryColor,
-            onPressed: () =>
-                {showDateForward = false, changeText(showDateForward)},
+            onPressed: () => {
+              showDateForward = false,
+              changeText(showDateForward),
+            },
           ),
           Text(
             text,
@@ -104,8 +108,10 @@ class MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.arrow_forward_ios,
                 size: MediaQuery.of(context).size.width * arrowSize),
             color: Theme.of(context).primaryColor,
-            onPressed: () =>
-                {showDateForward = true, changeText(showDateForward)},
+            onPressed: () => {
+              showDateForward = true,
+              changeText(showDateForward),
+            },
           )
         ],
       ),
@@ -152,46 +158,24 @@ class MainScreenState extends State<MainScreen> {
                   ],
                 ),
               ),
-              CircleAvatar(
-                radius: 65,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: Container(
-                  padding: EdgeInsets.all(20),
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: FittedBox(
-                          child: Text(
-                            "${totalIncomes - totalExpenses} €",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        "left",
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              circleAvatar(
+                color: Theme.of(context).primaryColor,
+                textColor: Colors.white,
+                mainText: "${totalIncomes - totalExpenses} €",
+                secondText: "left",
+              )
             ],
           ),
         ),
         categoryData(
             context: context,
-            title: incomeType,
+            type: incomeType,
             dataList: incomeList,
             typeColor: Theme.of(context).primaryColor),
         SizedBox(height: 10),
         categoryData(
             context: context,
-            title: expenseType,
+            type: expenseType,
             dataList: expenseList,
             typeColor: Theme.of(context).accentColor)
       ],
@@ -200,7 +184,7 @@ class MainScreenState extends State<MainScreen> {
 
   Widget categoryData(
       {@required BuildContext context,
-      @required String title,
+      @required String type,
       @required List<Category> dataList,
       @required Color typeColor}) {
     return Column(
@@ -219,7 +203,7 @@ class MainScreenState extends State<MainScreen> {
             children: [
               Expanded(
                 child: Text(
-                  title,
+                  type,
                   style: TextStyle(
                       fontSize: 18,
                       color: typeColor,
@@ -236,13 +220,35 @@ class MainScreenState extends State<MainScreen> {
 
                     alertDialogFields(
                       context: context,
-                      title:
-                          title == expenseType ? "Add expense" : "Add income",
-                      hintText: title == expenseType ? "Expense" : "Income",
-                      titleController: dialogTitleController,
-                      amountController: dialogAmountController,
+                      title: type == expenseType ? "Add expense" : "Add income",
+                      hintText: type == expenseType ? "Expense" : "Income",
                       onPressedOk: () {
-                        // TODO: insert category item in db
+                        hideKeyboard(context);
+
+                        bool alreadyExists = doExist(
+                            title: titleFromDialog(type),
+                            type: type,
+                            itemsList: dataList);
+
+                        if (alreadyExists) {
+                          Navigator.pop(context);
+                          simpleAlertDialog(
+                              context: context,
+                              onPressedOk: () => Navigator.pop(context),
+                              title: "Sorry",
+                              contentText: "Category already exists.");
+                        } else {
+                          Category category = Category(
+                            title: titleFromDialog(type),
+                            type: type,
+                            amount: amountFromDialog(),
+                            // TODO: get month from PageBuilder and save date as that month
+                            date: dateWithZeroTime(DateTime.now()).toString(),
+                          );
+                          dbInsertRecord(category);
+                          resetData();
+                          Navigator.pop(context);
+                        }
                       },
                     );
                   },
@@ -261,19 +267,19 @@ class MainScreenState extends State<MainScreen> {
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: listTileMainScreen(
                   context: context,
-                  isExpense: title == incomeType ? false : true,
+                  isExpense: type == incomeType ? false : true,
                   title: dataList[index].title,
                   moneyAmount: "${dataList[index].amount} €",
                   color: typeColor,
                   onIconPressed: () {
-                    if (title == expenseType)
+                    if (type == expenseType)
                       push(
                         context: context,
                         nextScreen: AddRecordScreen(),
                       );
                   },
                   onTitlePressed: () {
-                    if (title == expenseType)
+                    if (type == expenseType)
                       push(
                         context: context,
                         nextScreen: DetailsScreen(
@@ -290,22 +296,35 @@ class MainScreenState extends State<MainScreen> {
                         context: context,
                         title: "Edit income",
                         hintText: "Income",
-                        titleController: dialogTitleController,
-                        amountController: dialogAmountController,
                         onPressedOk: () {
-                          // TODO: update item in db
+                          dbUpdateRecord(
+                                  index: dataList[index].id,
+                                  title: dialogTitleController.text ?? "Income",
+                                  // TODO: get month from PageBuilder and save date as that month
+                                  date: dateWithZeroTime(DateTime.now())
+                                      .toString())
+                              .then((_) {
+                            resetData();
+                            Navigator.pop(context);
+                          });
                         },
                       );
                     }
                   },
                   onLongPressed: () {
-                    alertDialogDelete(
+                    simpleAlertDialog(
                       context: context,
                       title: "Delete?",
                       contentText:
-                          "\"${dataList[index].title}\" will be removed from $title category forever.",
+                          "\"${dataList[index].title}\" will be removed from $type category forever.",
                       onPressedOk: () {
-                        // TODO: delete all rows where category = ? in db
+                        dbDeleteCategory(
+                                title: dataList[index].title,
+                                type: dataList[index].type)
+                            .then((_) {
+                          resetData();
+                          Navigator.pop(context);
+                        });
                       },
                     );
                   }),
@@ -317,7 +336,7 @@ class MainScreenState extends State<MainScreen> {
   }
 
   Future<List<Category>> dbGetCategories(type) async {
-    return await dbGetCategoriesByType(type);
+    return await dbGetRecordsByType(type);
   }
 
   void setData() {
@@ -341,6 +360,16 @@ class MainScreenState extends State<MainScreen> {
             totalExpenses = totalExpenses + item.amount;
           });
         });
+    });
+  }
+
+  void resetData() {
+    setState(() {
+      totalIncomes = 0;
+      totalExpenses = 0;
+      incomeList.clear();
+      expenseList.clear();
+      setData();
     });
   }
 }

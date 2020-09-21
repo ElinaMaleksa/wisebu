@@ -1,3 +1,6 @@
+import 'package:flutter/cupertino.dart';
+import 'package:wisebu/widgets/Widgets.dart';
+
 import 'Category.dart';
 
 final String addExpensesTitle = "Add current expenses";
@@ -9,6 +12,26 @@ final String incomeType = "Income";
 DateTime dateWithZeroTime(DateTime date) {
   return DateTime(date.year, date.month, date.day, 0, 0, 0);
 }
+
+bool doExist(
+    {@required String title,
+    @required String type,
+    @required List<Category> itemsList}) {
+  bool doExist;
+  itemsList.forEach((item) {
+    // trimRight() removes whitespaces from end, trimLeft() - from start
+    if (item.title == title.trimRight().trimLeft() && item.type == type)
+      doExist = true;
+  });
+  return doExist ?? false;
+}
+
+String titleFromDialog(String type) =>
+    dialogTitleController.text.isNotEmpty ? dialogTitleController.text : type;
+
+double amountFromDialog() => dialogAmountController.text.isNotEmpty
+    ? double.parse(dialogAmountController.text)
+    : 0;
 
 List<Category> incomes = [
   Category(

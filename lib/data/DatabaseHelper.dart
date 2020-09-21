@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:wisebu/data/Category.dart';
+import 'package:wisebu/data/Data.dart';
 
 Database db;
 final databaseName = 'wisebu_db.db';
@@ -42,6 +43,7 @@ Future<void> dbInsertCategories(
     {@required List<Category> incomes,
     @required List<Category> expenses}) async {
   db = await initializeDatabase();
+
   Future<void> insertCategory(Category category) async {
     await db.insert(
       '$tableCategories',
@@ -56,7 +58,7 @@ Future<void> dbInsertCategories(
 }
 
 // query for  MainScreen
-Future<List<Category>> dbGetCategoriesByType(String type) async {
+Future<List<Category>> dbGetRecordsByType(String type) async {
   // Get a reference to the database
   db = await initializeDatabase();
 
@@ -102,17 +104,16 @@ Future<List<Category>> dbGetRecordsByTitle(String title) async {
 Future<void> dbUpdateRecord(
     {@required int index,
     @required String title,
-    @required String date,
-    @required String amount}) async {
+    @required String date}) async {
   db = await initializeDatabase();
 
   String whereStatement = '$columnId = ?';
   List<String> whereArgument = ['$index'];
 
   Map<String, dynamic> record = {
-    title: title,
-    date: date,
-    amount: double.parse(amount)
+    columnTitle: title,
+    columnDate: date,
+    columnAmount: amountFromDialog()
   };
 
   await db.update(
@@ -123,12 +124,40 @@ Future<void> dbUpdateRecord(
   );
 }
 
-Future<void> dbDeleteFromFeelings({@required String title}) async {
+Future<void> dbDeleteCategory(
+    {@required String title, @required String type}) async {
   db = await initializeDatabase();
 
   await db.delete(
     '$tableCategories',
-    where: "$title = ?",
-    whereArgs: [title],
+    where: "$columnTitle = ? AND $columnType = ?",
+    whereArgs: [title, type],
+  );
+}
+
+Future<void> dbDeleteRecord({@required int id}) async {
+  db = await initializeDatabase();
+
+  await db.delete(
+    '$tableCategories',
+    where: "$columnId = ?",
+    whereArgs: [id],
+  );
+}
+
+Future<void> dbInsertRecord(Category category) async {
+  db = await initializeDatabase();
+
+  Map<String, dynamic> record = {
+    '$columnTitle': category.title,
+    '$columnType': category.type,
+    '$columnDate': category.date,
+    '$columnAmount': category.amount
+  };
+
+  await db.insert(
+    '$tableCategories',
+    record,
+    conflictAlgorithm: ConflictAlgorithm.replace,
   );
 }

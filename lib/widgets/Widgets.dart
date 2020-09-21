@@ -129,7 +129,7 @@ Widget circleAvatar(
           if (secondText != null)
             Text(
               secondText,
-              style: TextStyle(color: Colors.white, fontSize: 18),
+              style: TextStyle(color: textColor, fontSize: 18),
             ),
         ],
       ),
@@ -137,16 +137,17 @@ Widget circleAvatar(
   );
 }
 
-Widget addNewItem(
+Widget newItemListTile(
     {@required String text, @required Color color, @required onPressed}) {
   return InkWell(
     onTap: onPressed,
     child: ListTile(
-        title: Text(
-          text,
-          style: TextStyle(fontSize: 18, color: Colors.grey[500]),
-        ),
-        trailing: Icon(Icons.add_circle, size: 35, color: color)),
+      title: Text(
+        text,
+        style: TextStyle(fontSize: 18, color: Colors.grey[500]),
+      ),
+      trailing: Icon(Icons.add_circle, size: 35, color: color),
+    ),
   );
 }
 
@@ -154,9 +155,7 @@ Future<dynamic> alertDialogFields(
     {@required BuildContext context,
     @required onPressedOk,
     String title,
-    String hintText,
-    @required TextEditingController titleController,
-    @required TextEditingController amountController}) {
+    String hintText}) {
   return showDialog(
     context: context,
     child: AlertDialog(
@@ -169,7 +168,7 @@ Future<dynamic> alertDialogFields(
             Flexible(
               flex: 5,
               child: TextField(
-                controller: titleController,
+                controller: dialogTitleController,
                 decoration: InputDecoration(
                   hintText: hintText ?? "",
                 ),
@@ -179,7 +178,7 @@ Future<dynamic> alertDialogFields(
             Flexible(
               flex: 5,
               child: TextField(
-                controller: amountController,
+                controller: dialogAmountController,
                 decoration: InputDecoration(
                     hintText: "Amount",
                     suffixIcon: Icon(Icons.euro_symbol, size: 15)),
@@ -207,7 +206,7 @@ Future<dynamic> alertDialogFields(
   );
 }
 
-Future<dynamic> alertDialogDelete(
+Future<dynamic> simpleAlertDialog(
     {@required BuildContext context,
     @required onPressedOk,
     @required String title,
@@ -249,3 +248,5 @@ Future<dynamic> push({@required BuildContext context, @required nextScreen}) {
     ),
   );
 }
+
+void hideKeyboard(context) => FocusScope.of(context).requestFocus(FocusNode());

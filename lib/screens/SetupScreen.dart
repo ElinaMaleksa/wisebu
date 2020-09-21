@@ -41,197 +41,199 @@ class SetupScreenState extends State<SetupScreen> {
   }
 
   @override
-  void dispose() {
-    dialogTitleController.dispose();
-    dialogAmountController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isExpenses ? addExpensesTitle : addIncomesTitle),
-        // disable going back from appBar
-        automaticallyImplyLeading: !isExpenses ? false : true,
-      ),
-      body: ListView(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(right: 20),
-            child: ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: itemsList.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.grey[350],
-                        width: 1,
-                      ),
-                      left: BorderSide(
-                        color: widget.color,
-                        width: 20,
+    return WillPopScope(
+      onWillPop: () async => isExpenses ? true : false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isExpenses ? addExpensesTitle : addIncomesTitle),
+          // disable going back from appBar
+          automaticallyImplyLeading: isExpenses ? true : false,
+        ),
+        body: ListView(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: itemsList.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey[350],
+                          width: 1,
+                        ),
+                        left: BorderSide(
+                          color: widget.color,
+                          width: 20,
+                        ),
                       ),
                     ),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      dialogTitleController.text = itemsList[index].title;
+                    child: InkWell(
+                      onTap: () {
+                        dialogTitleController.text = itemsList[index].title;
 
-                      dialogAmountController.text =
-                          itemsList[index].amount == 0.0
-                              ? ""
-                              : itemsList[index].amount.toString();
+                        dialogAmountController.text =
+                            itemsList[index].amount == 0.0
+                                ? ""
+                                : itemsList[index].amount.toString();
 
-                      if (!isSelected(index)) {
-                        alertDialogFields(
-                            context: context,
-                            title: isExpenses ? "Add expense" : "Add income",
-                            hintText: isExpenses ? "Expense" : "Income",
-                            titleController: dialogTitleController,
-                            amountController: dialogAmountController,
-                            onPressedOk: () {
-                              setState(() {
-                                itemsList[index].title =
-                                    dialogTitleController.text.isNotEmpty
-                                        ? dialogTitleController.text
-                                        : "Income";
+                        if (!isSelected(index)) {
+                          alertDialogFields(
+                              context: context,
+                              title: isExpenses ? "Add expense" : "Add income",
+                              hintText: isExpenses ? "Expense" : "Income",
+                              onPressedOk: () {
+                                setState(() {
+                                  itemsList[index].title =
+                                      titleFromDialog(itemsList[index].type);
 
-                                itemsList[index].amount = dialogAmountController
-                                        .text.isNotEmpty
-                                    ? double.parse(dialogAmountController.text)
-                                    : 0;
+                                  itemsList[index].amount =
+                                      dialogAmountController.text.isNotEmpty
+                                          ? double.parse(
+                                              dialogAmountController.text)
+                                          : 0;
 
-                                isExpenses
-                                    ? selectedExpenses.add(itemsList[index])
-                                    : selectedIncomes.add(itemsList[index]);
-                                selectedIncomes.forEach((element) {
-                                  print(element.title);
+                                  isExpenses
+                                      ? selectedExpenses.add(itemsList[index])
+                                      : selectedIncomes.add(itemsList[index]);
+                                  selectedIncomes.forEach((element) {
+                                    print(element.title);
+                                  });
                                 });
+                                Navigator.pop(context);
                               });
-                              Navigator.pop(context);
-                            });
-                      } else
+                        } else
+                          setState(() {
+                            isExpenses
+                                ? selectedExpenses.remove(itemsList[index])
+                                : selectedIncomes.remove(itemsList[index]);
+                          });
+                      },
+                      onLongPress: () {
                         setState(() {
                           isExpenses
                               ? selectedExpenses.remove(itemsList[index])
                               : selectedIncomes.remove(itemsList[index]);
+                          itemsList.remove(itemsList[index]);
                         });
-                    },
-                    onLongPress: () {
-                      setState(() {
-                        isExpenses
-                            ? selectedExpenses.remove(itemsList[index])
-                            : selectedIncomes.remove(itemsList[index]);
-                        itemsList.remove(itemsList[index]);
-                      });
-                    },
-                    child: ListTile(
-                      title: Text(
-                        itemsList[index].title,
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      trailing: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.3,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(
-                              flex: 7,
-                              child: FittedBox(
-                                child: Padding(
-                                  padding: EdgeInsets.only(right: 10),
-                                  child: Text("${itemsList[index].amount} €",
-                                      style: TextStyle(fontSize: 15)),
+                      },
+                      child: ListTile(
+                        title: Text(
+                          itemsList[index].title,
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        trailing: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.3,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                flex: 7,
+                                child: FittedBox(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 10),
+                                    child: Text("${itemsList[index].amount} €",
+                                        style: TextStyle(fontSize: 15)),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Flexible(
-                              flex: 3,
-                              child: Icon(
-                                isSelected(index)
-                                    ? Icons.check_circle
-                                    : Icons.radio_button_unchecked,
-                                color: widget.color,
-                                size: 35,
+                              Flexible(
+                                flex: 3,
+                                child: Icon(
+                                  isSelected(index)
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  color: widget.color,
+                                  size: 35,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: addNewItem(
-              text: "Add category",
-              color: widget.color,
-              onPressed: () {
-                setState(() {
-                  dialogTitleController.text = "";
-                  dialogAmountController.text = "";
-                });
-                alertDialogFields(
-                    context: context,
-                    title: isExpenses ? "Add expense" : "Add income",
-                    hintText: isExpenses ? "Expense" : "Income",
-                    titleController: dialogTitleController,
-                    amountController: dialogAmountController,
-                    onPressedOk: () {
-                      setState(() {
-                        Category item = Category(
-                            title: dialogTitleController.text.isNotEmpty
-                                ? dialogTitleController.text
-                                : "Income",
-                            type: isExpenses ? expenseType : incomeType,
-                            date: dateWithZeroTime(DateTime.now()).toString(),
-                            amount: dialogAmountController.text.isNotEmpty
-                                ? double.parse(dialogAmountController.text)
-                                : 0);
-                        itemsList.add(item);
-                        isExpenses
-                            ? selectedExpenses.add(item)
-                            : selectedIncomes.add(item);
-                      });
-                      Navigator.pop(context);
-                    });
-              },
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.all(20),
-            alignment: Alignment.bottomRight,
-            child: yellowButton(
-              context: context,
-              onPressed: () {
-                if (isExpenses) {
-                  dbInsertCategories(
-                          incomes: widget.incomesList,
-                          expenses: selectedExpenses)
-                      .then((value) =>
-                          push(context: context, nextScreen: MainScreen()));
-                } else
-                  push(
-                    context: context,
-                    nextScreen: SetupScreen(
-                      type: expenseType,
-                      incomesList: selectedIncomes,
-                      buttonText: "Finish",
-                      color: Theme.of(context).accentColor,
-                    ),
                   );
-              },
-              text: widget.buttonText,
+                },
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: newItemListTile(
+                text: "Add category",
+                color: widget.color,
+                onPressed: () {
+                  setState(() {
+                    dialogTitleController.text = "";
+                    dialogAmountController.text = "";
+                  });
+                  alertDialogFields(
+                      context: context,
+                      title: isExpenses ? "Add expense" : "Add income",
+                      hintText: isExpenses ? "Expense" : "Income",
+                      onPressedOk: () {
+                        bool alreadyExists = doExist(
+                            title: titleFromDialog(widget.type),
+                            type: widget.type,
+                            itemsList: itemsList);
+
+                        if (alreadyExists) {
+                          simpleAlertDialog(
+                              context: context,
+                              onPressedOk: () => Navigator.pop(context),
+                              title: "Sorry",
+                              contentText: "Category already exists.");
+                        } else {
+                          setState(() {
+                            Category item = Category(
+                                title: titleFromDialog(
+                                    isExpenses ? expenseType : incomeType),
+                                type: isExpenses ? expenseType : incomeType,
+                                date:
+                                    dateWithZeroTime(DateTime.now()).toString(),
+                                amount: amountFromDialog());
+                            itemsList.add(item);
+                            isExpenses
+                                ? selectedExpenses.add(item)
+                                : selectedIncomes.add(item);
+                          });
+                        }
+                        Navigator.pop(context);
+                      });
+                },
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.all(20),
+              alignment: Alignment.bottomRight,
+              child: yellowButton(
+                context: context,
+                onPressed: () {
+                  if (isExpenses) {
+                    dbInsertCategories(
+                            incomes: widget.incomesList,
+                            expenses: selectedExpenses)
+                        .then((value) =>
+                            push(context: context, nextScreen: MainScreen()));
+                  } else
+                    push(
+                      context: context,
+                      nextScreen: SetupScreen(
+                        type: expenseType,
+                        incomesList: selectedIncomes,
+                        buttonText: "Finish",
+                        color: Theme.of(context).accentColor,
+                      ),
+                    );
+                },
+                text: widget.buttonText,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
