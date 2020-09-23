@@ -84,8 +84,10 @@ class SetupScreenState extends State<SetupScreen> {
                         if (!isSelected(index)) {
                           alertDialogFields(
                               context: context,
-                              title: isExpenses ? "Add expense" : "Add income",
-                              hintText: isExpenses ? "Expense" : "Income",
+                              title: isExpenses
+                                  ? expenseDialogTitle
+                                  : incomeDialogTitle,
+                              hintText: isExpenses ? expenseType : incomeType,
                               onPressedOk: () {
                                 setState(() {
                                   itemsList[index].title =
@@ -100,9 +102,7 @@ class SetupScreenState extends State<SetupScreen> {
                                   isExpenses
                                       ? selectedExpenses.add(itemsList[index])
                                       : selectedIncomes.add(itemsList[index]);
-                                  selectedIncomes.forEach((element) {
-                                    print(element.title);
-                                  });
+                                  selectedIncomes.forEach((element) {});
                                 });
                                 Navigator.pop(context);
                               });
@@ -172,8 +172,9 @@ class SetupScreenState extends State<SetupScreen> {
                   });
                   alertDialogFields(
                       context: context,
-                      title: isExpenses ? "Add expense" : "Add income",
-                      hintText: isExpenses ? "Expense" : "Income",
+                      title:
+                          isExpenses ? expenseDialogTitle : incomeDialogTitle,
+                      hintText: isExpenses ? expenseType : incomeType,
                       onPressedOk: () {
                         bool alreadyExists = doExist(
                             title: titleFromDialog(widget.type),

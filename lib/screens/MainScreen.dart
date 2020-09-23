@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
@@ -8,6 +9,12 @@ import 'package:wisebu/screens/DetailsScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
 class MainScreen extends StatefulWidget {
+  final bool showSnackBar;
+  final String snackBarMessage;
+  final String dateTimeMonth;
+
+  MainScreen({this.showSnackBar, this.snackBarMessage, this.dateTimeMonth});
+
   @override
   State<StatefulWidget> createState() => MainScreenState();
 }
@@ -20,10 +27,25 @@ class MainScreenState extends State<MainScreen> {
   double totalExpenses = 0;
   List<Category> incomeList = [];
   List<Category> expenseList = [];
+  DateTime dateTimeNow;
 
   @override
   void initState() {
+    if (widget.dateTimeMonth != null)
+      dateTimeNow = DateTime.parse(widget.dateTimeMonth);
+    else
+      dateTimeNow = DateTime.now();
+
     setData();
+    if (widget.showSnackBar != null && widget.showSnackBar)
+      // set delay to get context
+      Future.delayed(Duration.zero, () {
+        snackBar(
+            context: context,
+            infoMessage: widget.snackBarMessage,
+            backgroundColor: Theme.of(context).primaryColor);
+      });
+
     super.initState();
   }
 
@@ -41,18 +63,29 @@ class MainScreenState extends State<MainScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text("BUDGET"),
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.cached,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                if (dateTimeNow.toString().substring(0, 7) !=
+                    DateTime.now().toString().substring(0, 7)) {
+                  setState(() {
+                    dateTimeNow = DateTime.now();
+                  });
+                  resetData();
+                }
+              },
+            )
+          ],
           // do not show leading back icon in appBar
           automaticallyImplyLeading: false,
         ),
         body: Column(
           children: [
-            header(
-                context: context,
-                showDateForward: showDateForward,
-                changeText: changeText,
-                text: 'September, 2020',
-                headerHeight: 0.08,
-                arrowSize: 0.05),
+            header(context: context),
             Expanded(
               child: PageView.builder(
                 physics: NeverScrollableScrollPhysics(),
@@ -68,105 +101,117 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget header(
-      {context,
-      showDateForward,
-      changeText(showDateForward),
-      String text,
-      double headerHeight,
-      double arrowSize}) {
+  Widget header({@required BuildContext context}) {
     return Container(
-      height: MediaQuery.of(context).size.height * headerHeight,
+      height: 50,
       color: Colors.grey[200],
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          IconButton(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            padding: EdgeInsets.only(left: 10),
-            icon: Icon(Icons.arrow_back_ios,
-                size: MediaQuery.of(context).size.width * arrowSize),
-            color: Theme.of(context).primaryColor,
-            onPressed: () => {
-              showDateForward = false,
-              changeText(showDateForward),
-            },
-          ),
+          headerIcon(
+              context: context,
+              iconData: Icons.arrow_back_ios,
+              isForward: false),
           Text(
-            text,
+            DateFormat('MMMM, y').format(dateTimeNow),
             style: TextStyle(
               color: Colors.black,
-              fontSize:
-                  MediaQuery.of(context).size.height * headerHeight * 0.35,
+              fontSize: 20,
             ),
           ),
-          IconButton(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            padding: EdgeInsets.only(right: 10),
-            icon: Icon(Icons.arrow_forward_ios,
-                size: MediaQuery.of(context).size.width * arrowSize),
-            color: Theme.of(context).primaryColor,
-            onPressed: () => {
-              showDateForward = true,
-              changeText(showDateForward),
-            },
-          )
+          headerIcon(
+              context: context,
+              iconData: Icons.arrow_forward_ios,
+              isForward: true),
         ],
       ),
     );
   }
 
-  void changeText(showDateForward) {}
+  IconButton headerIcon(
+      {@required BuildContext context,
+      @required IconData iconData,
+      @required bool isForward}) {
+    return IconButton(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      padding: EdgeInsets.symmetric(horizontal: 15),
+      icon: Icon(iconData, size: 20),
+      color: Theme.of(context).primaryColor,
+      onPressed: () {
+        showDateForward = isForward;
+        changeText(showDateForward);
+      },
+    );
+  }
+
+  void changeText(showDateForward) {
+    if (showDateForward == false)
+      setState(() {
+        dateTimeNow = DateTime(dateTimeNow.year, dateTimeNow.month - 1, 1);
+        pageController.previousPage(
+            duration: Duration(milliseconds: 1), curve: Curves.linear);
+      });
+    else if (showDateForward == true)
+      setState(() {
+        dateTimeNow = DateTime(dateTimeNow.year, dateTimeNow.month + 1, 1);
+        pageController.nextPage(
+            duration: Duration(milliseconds: 1), curve: Curves.linear);
+      });
+    // reset data after changing month in header
+    resetData();
+  }
 
   Widget content(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          height: MediaQuery.of(context).size.height * 0.2,
-          padding: EdgeInsets.all(10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ListTile(
-                      visualDensity:
-                          VisualDensity(horizontal: -4, vertical: -4),
-                      title: Text("$totalIncomes €"),
-                      leading: Container(
-                        color: Theme.of(context).primaryColor,
-                        width: 20,
+        if (totalIncomes - totalExpenses != 0.0)
+          Container(
+            height: MediaQuery.of(context).size.height * 0.2,
+            padding: EdgeInsets.all(10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ListTile(
+                        visualDensity:
+                            VisualDensity(horizontal: -4, vertical: -4),
+                        title: Text("$totalIncomes €"),
+                        leading: Container(
+                          color: Theme.of(context).primaryColor,
+                          width: 20,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    ListTile(
-                      visualDensity:
-                          VisualDensity(horizontal: -4, vertical: -4),
-                      title: Text("$totalExpenses €"),
-                      leading: Container(
-                        color: Theme.of(context).accentColor,
-                        width: 20,
+                      SizedBox(
+                        height: 20,
                       ),
-                    ),
-                  ],
+                      ListTile(
+                        visualDensity:
+                            VisualDensity(horizontal: -4, vertical: -4),
+                        title: Text("$totalExpenses €"),
+                        leading: Container(
+                          color: Theme.of(context).accentColor,
+                          width: 20,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              circleAvatar(
-                color: Theme.of(context).primaryColor,
-                textColor: Colors.white,
-                mainText: "${totalIncomes - totalExpenses} €",
-                secondText: "left",
-              )
-            ],
+                circleAvatar(
+                  color: Theme.of(context).primaryColor,
+                  textColor: Colors.white,
+                  // round a double with toStringAsFixed(2)
+                  mainText:
+                      "${(totalIncomes - totalExpenses).toStringAsFixed(2)} €",
+                  secondText: "left",
+                )
+              ],
+            ),
           ),
-        ),
         categoryData(
             context: context,
             type: incomeType,
@@ -220,8 +265,10 @@ class MainScreenState extends State<MainScreen> {
 
                     alertDialogFields(
                       context: context,
-                      title: type == expenseType ? "Add expense" : "Add income",
-                      hintText: type == expenseType ? "Expense" : "Income",
+                      title: type == expenseType
+                          ? expenseDialogTitle
+                          : incomeDialogTitle,
+                      hintText: type == expenseType ? expenseType : incomeType,
                       onPressedOk: () {
                         hideKeyboard(context);
 
@@ -242,8 +289,7 @@ class MainScreenState extends State<MainScreen> {
                             title: titleFromDialog(type),
                             type: type,
                             amount: amountFromDialog(),
-                            // TODO: get month from PageBuilder and save date as that month
-                            date: dateWithZeroTime(DateTime.now()).toString(),
+                            date: dateWithZeroTime(dateTimeNow).toString(),
                           );
                           dbInsertRecord(category);
                           resetData();
@@ -274,9 +320,11 @@ class MainScreenState extends State<MainScreen> {
                   onIconPressed: () {
                     if (type == expenseType)
                       push(
-                        context: context,
-                        nextScreen: AddRecordScreen(),
-                      );
+                          context: context,
+                          nextScreen: AddRecordScreen(
+                            expenseList: dataList,
+                            expenseCategoryTitle: dataList[index].title,
+                          ));
                   },
                   onTitlePressed: () {
                     if (type == expenseType)
@@ -284,6 +332,8 @@ class MainScreenState extends State<MainScreen> {
                         context: context,
                         nextScreen: DetailsScreen(
                           title: dataList[index].title,
+                          expenseList: dataList,
+                          dateTimeMonth: dateTimeNow.toString(),
                         ),
                       );
                     else {
@@ -298,12 +348,9 @@ class MainScreenState extends State<MainScreen> {
                         hintText: "Income",
                         onPressedOk: () {
                           dbUpdateRecord(
-                                  index: dataList[index].id,
-                                  title: dialogTitleController.text ?? "Income",
-                                  // TODO: get month from PageBuilder and save date as that month
-                                  date: dateWithZeroTime(DateTime.now())
-                                      .toString())
-                              .then((_) {
+                            index: dataList[index].id,
+                            title: dialogTitleController.text ?? "Income",
+                          ).then((_) {
                             resetData();
                             Navigator.pop(context);
                           });
@@ -316,11 +363,12 @@ class MainScreenState extends State<MainScreen> {
                       context: context,
                       title: "Delete?",
                       contentText:
-                          "\"${dataList[index].title}\" will be removed from $type category forever.",
+                          "\"${dataList[index].title}\" category and it\'s records will be removed forever.",
                       onPressedOk: () {
                         dbDeleteCategory(
                                 title: dataList[index].title,
-                                type: dataList[index].type)
+                                type: dataList[index].type,
+                                date: dataList[index].date)
                             .then((_) {
                           resetData();
                           Navigator.pop(context);
@@ -335,12 +383,12 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Future<List<Category>> dbGetCategories(type) async {
-    return await dbGetRecordsByType(type);
+  Future<List<Category>> dbGetCategories({@required String type}) async {
+    return await dbGetRecordsByType(type, dateTimeNow.toString());
   }
 
-  void setData() {
-    futureIncomeList = dbGetCategories(incomeType);
+  void setData({String date}) {
+    futureIncomeList = dbGetCategories(type: incomeType);
     futureIncomeList.then((list) {
       if (this.mounted)
         setState(() {
@@ -351,7 +399,7 @@ class MainScreenState extends State<MainScreen> {
         });
     });
 
-    futureExpenseList = dbGetCategories(expenseType);
+    futureExpenseList = dbGetCategories(type: expenseType);
     futureExpenseList.then((list) {
       if (this.mounted)
         setState(() {
@@ -372,4 +420,78 @@ class MainScreenState extends State<MainScreen> {
       setData();
     });
   }
+}
+
+Widget listTileMainScreen(
+    {@required BuildContext context,
+    @required String title,
+    @required String moneyAmount,
+    @required Color color,
+    @required onTitlePressed,
+    @required onLongPressed,
+    onIconPressed,
+    @required bool isExpense}) {
+  return Container(
+    decoration: BoxDecoration(
+      border: Border(
+        bottom: BorderSide(
+          color: Colors.grey[350],
+          width: 1,
+        ),
+      ),
+    ),
+    child: InkWell(
+      onTap: isExpense ? null : onTitlePressed,
+      onLongPress: isExpense ? null : onLongPressed,
+      child: ListTile(
+        visualDensity: VisualDensity(vertical: -2),
+        contentPadding: EdgeInsets.only(left: 5, right: 5),
+        title: InkWell(
+          onTap: isExpense ? onTitlePressed : null,
+          onLongPress: isExpense ? onLongPressed : null,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.85,
+            height: 30,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  flex: 6,
+                  child: FittedBox(
+                    child: Text(
+                      title,
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 4,
+                  child: FittedBox(
+                    child: Text(
+                      moneyAmount,
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        trailing: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.15,
+          child: isExpense
+              ? IconButton(
+                  visualDensity: VisualDensity(horizontal: -4),
+                  onPressed: isExpense ? onIconPressed : null,
+                  icon: Icon(
+                    Icons.add_circle_outline,
+                    color: color,
+                    size: 35,
+                  ),
+                )
+              : Container(),
+        ),
+      ),
+    ),
+  );
 }

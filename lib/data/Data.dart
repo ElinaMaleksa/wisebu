@@ -5,6 +5,8 @@ import 'Category.dart';
 
 final String addExpensesTitle = "Add current expenses";
 final String addIncomesTitle = "Add incomes for current month";
+final String expenseDialogTitle = "Add new expense category";
+final String incomeDialogTitle = "Add new income category";
 
 final String expenseType = "Expense";
 final String incomeType = "Income";

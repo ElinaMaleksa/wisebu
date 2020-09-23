@@ -1,9 +1,7 @@
 import 'package:clippy_flutter/clippy_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
-import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/screens/AddRecordScreen.dart';
 import 'package:wisebu/screens/MainScreen.dart';
@@ -11,10 +9,13 @@ import 'package:wisebu/widgets/Widgets.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String title;
+  final List<Category> expenseList;
+  final String dateTimeMonth;
 
-  // TODO: pass DATE to query from db by month
-
-  DetailsScreen({@required this.title});
+  DetailsScreen(
+      {@required this.title,
+      @required this.expenseList,
+      @required this.dateTimeMonth});
 
   @override
   State<StatefulWidget> createState() => DetailsScreenState();
@@ -26,7 +27,7 @@ class DetailsScreenState extends State<DetailsScreen> {
   double total = 0;
 
   Future<List<Category>> dbGetCategories(title) async {
-    return await dbGetRecordsByTitle(title);
+    return await dbGetRecordsByTitle(title, widget.dateTimeMonth);
   }
 
   void setData() {
@@ -127,11 +128,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                                     dbUpdateRecord(
                                             index: itemsList[index].id,
                                             title: dialogTitleController.text ??
-                                                "Expense",
-                                            // TODO: get month from PageBuilder and save date as that month
-                                            date:
-                                                dateWithZeroTime(DateTime.now())
-                                                    .toString())
+                                                "Expense")
                                         .then((_) {
                                       resetData();
                                       Navigator.pop(context);
@@ -155,9 +152,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                               },
                               child: ListTile(
                                 title: Text(
-                                  DateFormat('dd/MM/yyyy').format(
-                                    DateTime.parse(itemsList[index].date),
-                                  ),
+                                  formattedDate(itemsList[index].date),
                                 ),
                                 trailing: Text(
                                   "${itemsList[index].amount} €",
@@ -173,7 +168,13 @@ class DetailsScreenState extends State<DetailsScreen> {
                       text: "Add expense",
                       color: Theme.of(context).accentColor,
                       onPressed: () {
-                        push(context: context, nextScreen: AddRecordScreen());
+                        push(
+                          context: context,
+                          nextScreen: AddRecordScreen(
+                            expenseList: widget.expenseList,
+                            expenseCategoryTitle: widget.title,
+                          ),
+                        );
                       },
                     ),
                   )
@@ -187,7 +188,14 @@ class DetailsScreenState extends State<DetailsScreen> {
   }
 
   Future<bool> onWillPop() async {
-    pushReplacement(context: context, nextScreen: MainScreen());
+    pushReplacement(
+      context: context,
+      nextScreen: MainScreen(
+        dateTimeMonth: itemsList.isNotEmpty
+            ? itemsList[0].date
+            : DateTime.now().toString(),
+      ),
+    );
     // return true if the route to be popped
     return false;
   }

@@ -1,8 +1,13 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 TextEditingController dialogTitleController = TextEditingController();
 TextEditingController dialogAmountController = TextEditingController();
+
+FilteringTextInputFormatter amountInputFormatter =
+    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'));
 
 Widget yellowButton(
     {@required BuildContext context,
@@ -25,80 +30,6 @@ Widget yellowButton(
         ),
       ),
       onPressed: onPressed,
-    ),
-  );
-}
-
-Widget listTileMainScreen(
-    {@required BuildContext context,
-    @required String title,
-    @required String moneyAmount,
-    @required Color color,
-    @required onTitlePressed,
-    @required onLongPressed,
-    onIconPressed,
-    @required bool isExpense}) {
-  return Container(
-    decoration: BoxDecoration(
-      border: Border(
-        bottom: BorderSide(
-          color: Colors.grey[350],
-          width: 1,
-        ),
-      ),
-    ),
-    child: InkWell(
-      onTap: isExpense ? null : onTitlePressed,
-      onLongPress: isExpense ? null : onLongPressed,
-      child: ListTile(
-        visualDensity: VisualDensity(vertical: -2),
-        contentPadding: EdgeInsets.only(left: 5, right: 5),
-        title: InkWell(
-          onTap: isExpense ? onTitlePressed : null,
-          onLongPress: isExpense ? onLongPressed : null,
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.85,
-            height: 30,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  flex: 6,
-                  child: FittedBox(
-                    child: Text(
-                      title,
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
-                Flexible(
-                  flex: 4,
-                  child: FittedBox(
-                    child: Text(
-                      moneyAmount,
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        trailing: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.15,
-          child: isExpense
-              ? IconButton(
-                  visualDensity: VisualDensity(horizontal: -4),
-                  onPressed: isExpense ? onIconPressed : null,
-                  icon: Icon(
-                    Icons.add_circle_outline,
-                    color: color,
-                    size: 35,
-                  ),
-                )
-              : Container(),
-        ),
-      ),
     ),
   );
 }
@@ -157,53 +88,72 @@ Future<dynamic> alertDialogFields(
     String title,
     String hintText}) {
   return showDialog(
-    context: context,
-    child: AlertDialog(
-      title: Text(title ?? "", style: TextStyle(fontSize: 18)),
-      content: Container(
-        height: MediaQuery.of(context).size.height * 0.2,
-        width: MediaQuery.of(context).size.height * 0.7,
-        child: Column(
-          children: [
-            Flexible(
-              flex: 5,
-              child: TextField(
-                controller: dialogTitleController,
-                decoration: InputDecoration(
-                  hintText: hintText ?? "",
-                ),
-                maxLength: 30,
-              ),
-            ),
-            Flexible(
-              flex: 5,
-              child: TextField(
-                controller: dialogAmountController,
-                decoration: InputDecoration(
-                    hintText: "Amount",
-                    suffixIcon: Icon(Icons.euro_symbol, size: 15)),
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SingleChildScrollView(
+            child: Container(
+              width: MediaQuery.of(context).size.height * 0.7,
+              padding: EdgeInsets.only(top: 15, left: 15),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FittedBox(
+                    child: Text(
+                      title,
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(right: 15, top: 10),
+                    child: TextField(
+                      controller: dialogTitleController,
+                      decoration: InputDecoration(
+                        hintText: hintText ?? "",
+                      ),
+                      maxLength: 30,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(right: 15),
+                    child: TextField(
+                      controller: dialogAmountController,
+                      decoration: InputDecoration(
+                        hintText: "Amount",
+                        suffixIcon: Icon(Icons.euro_symbol, size: 15),
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        amountInputFormatter,
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FlatButton(child: Text("Save"), onPressed: onPressedOk),
+                        FlatButton(
+                          child: Text("Cancel"),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-      actions: [
-        FlatButton(child: Text("Ok"), onPressed: onPressedOk),
-        FlatButton(
-          child: Text("Cancel"),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    ),
-  );
+          ),
+        );
+      });
 }
 
 Future<dynamic> simpleAlertDialog(
@@ -250,3 +200,17 @@ Future<dynamic> push({@required BuildContext context, @required nextScreen}) {
 }
 
 void hideKeyboard(context) => FocusScope.of(context).requestFocus(FocusNode());
+
+String formattedDate(String date) =>
+    DateFormat('dd/MM/yyyy').format(DateTime.parse(date));
+
+Widget snackBar(
+    {@required BuildContext context,
+    @required String infoMessage,
+    @required Color backgroundColor}) {
+  return Flushbar(
+    message: infoMessage,
+    backgroundColor: backgroundColor,
+    duration: Duration(seconds: 3),
+  )..show(context);
+}

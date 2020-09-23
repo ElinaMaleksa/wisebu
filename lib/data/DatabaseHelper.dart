@@ -58,7 +58,7 @@ Future<void> dbInsertCategories(
 }
 
 // query for  MainScreen
-Future<List<Category>> dbGetRecordsByType(String type) async {
+Future<List<Category>> dbGetRecordsByType(String type, String date) async {
   // Get a reference to the database
   db = await initializeDatabase();
 
@@ -67,6 +67,7 @@ Future<List<Category>> dbGetRecordsByType(String type) async {
           "SUM($columnAmount) AS $columnAmount "
           "FROM $tableCategories "
           "WHERE $columnType = \"$type\" "
+          "AND $columnDate LIKE \"${date.substring(0, 7)}%\" "
           "GROUP BY $columnTitle");
 
   // Convert the List<Map<String, dynamic> into a List<Category>
@@ -82,12 +83,13 @@ Future<List<Category>> dbGetRecordsByType(String type) async {
 }
 
 // query for DetailsScreen
-Future<List<Category>> dbGetRecordsByTitle(String title) async {
+Future<List<Category>> dbGetRecordsByTitle(String title, String date) async {
   db = await initializeDatabase();
 
   final List<Map<String, dynamic>> maps =
       await db.rawQuery("SELECT * FROM $tableCategories "
           "WHERE $columnTitle = \"$title\" "
+          "AND $columnDate LIKE \"${date.substring(0, 7)}%\" "
           "ORDER BY $columnDate DESC");
 
   return List.generate(maps.length, (i) {
@@ -102,9 +104,7 @@ Future<List<Category>> dbGetRecordsByTitle(String title) async {
 }
 
 Future<void> dbUpdateRecord(
-    {@required int index,
-    @required String title,
-    @required String date}) async {
+    {@required int index, @required String title}) async {
   db = await initializeDatabase();
 
   String whereStatement = '$columnId = ?';
@@ -112,7 +112,6 @@ Future<void> dbUpdateRecord(
 
   Map<String, dynamic> record = {
     columnTitle: title,
-    columnDate: date,
     columnAmount: amountFromDialog()
   };
 
@@ -125,12 +124,15 @@ Future<void> dbUpdateRecord(
 }
 
 Future<void> dbDeleteCategory(
-    {@required String title, @required String type}) async {
+    {@required String title,
+    @required String type,
+    @required String date}) async {
   db = await initializeDatabase();
 
   await db.delete(
     '$tableCategories',
-    where: "$columnTitle = ? AND $columnType = ?",
+    where: "$columnTitle = ? AND $columnType = ? "
+        "AND $columnDate LIKE \"${date.substring(0, 7)}%\" ",
     whereArgs: [title, type],
   );
 }
