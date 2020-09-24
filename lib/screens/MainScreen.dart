@@ -168,7 +168,7 @@ class MainScreenState extends State<MainScreen> {
       children: [
         if (totalIncomes - totalExpenses != 0.0)
           Container(
-            height: MediaQuery.of(context).size.height * 0.2,
+            height: 150,
             padding: EdgeInsets.all(10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -222,7 +222,36 @@ class MainScreenState extends State<MainScreen> {
             context: context,
             type: expenseType,
             dataList: expenseList,
-            typeColor: Theme.of(context).accentColor)
+            typeColor: Theme.of(context).accentColor),
+        if (totalIncomes - totalExpenses == 0.0)
+          Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.only(top: 20),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: 250,
+                  child: Container(
+                    foregroundDecoration: BoxDecoration(
+                      color: Colors.grey,
+                      backgroundBlendMode: BlendMode.saturation,
+                    ),
+                    child: Image.asset(
+                      "lib/images/illustration.png",
+                    ),
+                  ),
+                ),
+                Text(
+                  "NOTHING TO SHOW",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.grey,
+                  ),
+                )
+              ],
+            ),
+          ),
       ],
     );
   }

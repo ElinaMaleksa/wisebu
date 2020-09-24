@@ -67,7 +67,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                     right: MediaQuery.of(context).size.width * 0.05,
                     left: MediaQuery.of(context).size.width * 0.1,
                     bottom: 15),
-                height: MediaQuery.of(context).size.height * 0.2,
+                height: 150,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -80,8 +80,8 @@ class DetailsScreenState extends State<DetailsScreen> {
                     ),
                     Flexible(
                       flex: 4,
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.15,
+                      child: Padding(
+                        padding: EdgeInsets.all(10),
                         child: circleAvatar(
                             color: Colors.white,
                             textColor: Theme.of(context).accentColor,

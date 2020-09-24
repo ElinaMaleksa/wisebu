@@ -16,7 +16,7 @@ Widget yellowButton(
     bool isLarge}) {
   if (isLarge == null) isLarge = false;
   return SizedBox(
-    height: MediaQuery.of(context).size.height * 0.09,
+    height: 50,
     width: MediaQuery.of(context).size.width * (isLarge ? 0.7 : 0.3),
     child: RaisedButton(
       shape: RoundedRectangleBorder(
