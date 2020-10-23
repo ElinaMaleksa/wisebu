@@ -180,7 +180,7 @@ class MainScreenState extends State<MainScreen> {
                       ListTile(
                         visualDensity:
                             VisualDensity(horizontal: -4, vertical: -4),
-                        title: Text("$totalIncomes €"),
+                        title: Text("${totalIncomes.toStringAsFixed(2)} €"),
                         leading: Container(
                           color: Theme.of(context).primaryColor,
                           width: 20,
@@ -192,7 +192,7 @@ class MainScreenState extends State<MainScreen> {
                       ListTile(
                         visualDensity:
                             VisualDensity(horizontal: -4, vertical: -4),
-                        title: Text("$totalExpenses €"),
+                        title: Text("${totalExpenses.toStringAsFixed(2)} €"),
                         leading: Container(
                           color: Theme.of(context).accentColor,
                           width: 20,
@@ -344,7 +344,7 @@ class MainScreenState extends State<MainScreen> {
                   context: context,
                   isExpense: type == incomeType ? false : true,
                   title: dataList[index].title,
-                  moneyAmount: "${dataList[index].amount} €",
+                  moneyAmount: "${dataList[index].amount.toStringAsFixed(2)} €",
                   color: typeColor,
                   onIconPressed: () {
                     if (type == expenseType)

@@ -85,7 +85,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                         child: circleAvatar(
                             color: Colors.white,
                             textColor: Theme.of(context).accentColor,
-                            mainText: "-$total €"),
+                            mainText: "-${total.toStringAsFixed(2)} €"),
                       ),
                     )
                   ],
@@ -155,7 +155,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                                   formattedDate(itemsList[index].date),
                                 ),
                                 trailing: Text(
-                                  "${itemsList[index].amount} €",
+                                  "${itemsList[index].amount.toStringAsFixed(2)} €",
                                 ),
                               ),
                             ),
