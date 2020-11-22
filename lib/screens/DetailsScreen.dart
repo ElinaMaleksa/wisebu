@@ -2,6 +2,7 @@ import 'package:clippy_flutter/clippy_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
+import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/screens/AddRecordScreen.dart';
 import 'package:wisebu/screens/MainScreen.dart';
@@ -25,13 +26,14 @@ class DetailsScreenState extends State<DetailsScreen> {
   Future<List<Category>> futureList;
   List<Category> itemsList = [];
   double total = 0;
+  String categoryTitle;
 
   Future<List<Category>> dbGetCategories(title) async {
     return await dbGetRecordsByTitle(title, widget.dateTimeMonth);
   }
 
   void setData() {
-    futureList = dbGetCategories(widget.title);
+    futureList = dbGetCategories(categoryTitle);
     futureList.then((list) {
       if (this.mounted)
         setState(() {
@@ -45,6 +47,7 @@ class DetailsScreenState extends State<DetailsScreen> {
 
   @override
   void initState() {
+    categoryTitle = widget.title;
     setData();
     super.initState();
   }
@@ -56,6 +59,50 @@ class DetailsScreenState extends State<DetailsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text("Category details"),
+          actions: [
+            Tooltip(
+              message: "Edit category title",
+              child: InkWell(
+                customBorder: CircleBorder(),
+                child: Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Icon(Icons.edit),
+                ),
+                onTap: () {
+                  setState(() {
+                    dialogTitleController.text = categoryTitle;
+                    dialogAmountController.text = total.toString();
+                  });
+                  alertDialogWithFields(
+                    context: context,
+                    title: "Edit category title",
+                    hintText: "Category title",
+                    enabled: false,
+                    onPressedOk: () async {
+                      if (dialogTitleController.text != categoryTitle &&
+                          dialogTitleController.text.isNotEmpty) {
+                        // update record titles in db to new title
+                        for (var i in itemsList)
+                          await dbUpdateRecord(
+                            index: i.id,
+                            title: dialogTitleController.text ?? categoryTitle,
+                            amount: i.amount,
+                          );
+
+                        // update category title and reset data
+                        setState(() {
+                          categoryTitle =
+                              dialogTitleController.text ?? categoryTitle;
+                        });
+                        resetData();
+                      }
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            )
+          ],
         ),
         body: Column(
           children: [
@@ -74,7 +121,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                     Flexible(
                       flex: 6,
                       child: Text(
-                        widget.title,
+                        categoryTitle,
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     ),
@@ -120,16 +167,17 @@ class DetailsScreenState extends State<DetailsScreen> {
                                   dialogAmountController.text =
                                       itemsList[index].amount.toString();
                                 });
-                                alertDialogFields(
+                                alertDialogWithFields(
                                   context: context,
                                   title: "Edit expense",
                                   hintText: "Expense",
                                   onPressedOk: () {
                                     dbUpdateRecord(
-                                            index: itemsList[index].id,
-                                            title: dialogTitleController.text ??
-                                                "Expense")
-                                        .then((_) {
+                                      index: itemsList[index].id,
+                                      title: dialogTitleController.text ??
+                                          "Expense",
+                                      amount: amountFromDialog(),
+                                    ).then((_) {
                                       resetData();
                                       Navigator.pop(context);
                                     });
@@ -172,7 +220,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                           context: context,
                           nextScreen: AddRecordScreen(
                             expenseList: widget.expenseList,
-                            expenseCategoryTitle: widget.title,
+                            expenseCategoryTitle: categoryTitle,
                           ),
                         );
                       },

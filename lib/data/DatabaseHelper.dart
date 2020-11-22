@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:wisebu/data/Category.dart';
-import 'package:wisebu/data/Data.dart';
 
 Database db;
 final databaseName = 'wisebu_db.db';
@@ -104,7 +103,9 @@ Future<List<Category>> dbGetRecordsByTitle(String title, String date) async {
 }
 
 Future<void> dbUpdateRecord(
-    {@required int index, @required String title}) async {
+    {@required int index,
+    @required String title,
+    @required double amount}) async {
   db = await initializeDatabase();
 
   String whereStatement = '$columnId = ?';
@@ -112,7 +113,7 @@ Future<void> dbUpdateRecord(
 
   Map<String, dynamic> record = {
     columnTitle: title,
-    columnAmount: amountFromDialog()
+    columnAmount: amount,
   };
 
   await db.update(

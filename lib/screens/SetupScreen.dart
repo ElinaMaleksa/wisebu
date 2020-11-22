@@ -82,7 +82,7 @@ class SetupScreenState extends State<SetupScreen> {
                                 : itemsList[index].amount.toString();
 
                         if (!isSelected(index)) {
-                          alertDialogFields(
+                          alertDialogWithFields(
                               context: context,
                               title: isExpenses
                                   ? expenseDialogTitle
@@ -170,7 +170,7 @@ class SetupScreenState extends State<SetupScreen> {
                     dialogTitleController.text = "";
                     dialogAmountController.text = "";
                   });
-                  alertDialogFields(
+                  alertDialogWithFields(
                       context: context,
                       title:
                           isExpenses ? expenseDialogTitle : incomeDialogTitle,

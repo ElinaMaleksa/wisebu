@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
@@ -58,26 +59,36 @@ class MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      // disable going back
-      onWillPop: () async => false,
+      onWillPop: () {
+        // close app on back pressed
+        SystemNavigator.pop();
+        return Future.value(false);
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text("BUDGET"),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.cached,
-                color: Colors.white,
+            Tooltip(
+              message: "Go to current month",
+              child: InkWell(
+                customBorder: CircleBorder(),
+                child: Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Icon(
+                    Icons.calendar_today,
+                    color: Colors.white,
+                  ),
+                ),
+                onTap: () {
+                  if (dateTimeNow.toString().substring(0, 7) !=
+                      DateTime.now().toString().substring(0, 7)) {
+                    setState(() {
+                      dateTimeNow = DateTime.now();
+                    });
+                    resetData();
+                  }
+                },
               ),
-              onPressed: () {
-                if (dateTimeNow.toString().substring(0, 7) !=
-                    DateTime.now().toString().substring(0, 7)) {
-                  setState(() {
-                    dateTimeNow = DateTime.now();
-                  });
-                  resetData();
-                }
-              },
             )
           ],
           // do not show leading back icon in appBar
@@ -284,7 +295,7 @@ class MainScreenState extends State<MainScreen> {
                       fontWeight: FontWeight.bold),
                 ),
               ),
-              Container(
+              SizedBox(
                 width: MediaQuery.of(context).size.width * 0.15,
                 child: IconButton(
                   visualDensity: VisualDensity(horizontal: -4),
@@ -292,7 +303,7 @@ class MainScreenState extends State<MainScreen> {
                     dialogTitleController.clear();
                     dialogAmountController.clear();
 
-                    alertDialogFields(
+                    alertDialogWithFields(
                       context: context,
                       title: type == expenseType
                           ? expenseDialogTitle
@@ -371,7 +382,7 @@ class MainScreenState extends State<MainScreen> {
                         dialogAmountController.text =
                             dataList[index].amount.toString();
                       });
-                      alertDialogFields(
+                      alertDialogWithFields(
                         context: context,
                         title: "Edit income",
                         hintText: "Income",
@@ -379,6 +390,7 @@ class MainScreenState extends State<MainScreen> {
                           dbUpdateRecord(
                             index: dataList[index].id,
                             title: dialogTitleController.text ?? "Income",
+                            amount: amountFromDialog(),
                           ).then((_) {
                             resetData();
                             Navigator.pop(context);
@@ -480,21 +492,18 @@ Widget listTileMainScreen(
           onLongPress: isExpense ? onLongPressed : null,
           child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.85,
-            height: 30,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
-                  flex: 6,
-                  child: FittedBox(
-                    child: Text(
-                      title,
-                      style: TextStyle(fontSize: 18),
-                    ),
+                  flex: 7,
+                  child: Text(
+                    title,
+                    style: TextStyle(fontSize: 18),
                   ),
                 ),
                 Flexible(
-                  flex: 4,
+                  flex: 3,
                   child: FittedBox(
                     child: Text(
                       moneyAmount,

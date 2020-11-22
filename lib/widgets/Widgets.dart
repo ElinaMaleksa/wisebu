@@ -82,11 +82,12 @@ Widget newItemListTile(
   );
 }
 
-Future<dynamic> alertDialogFields(
+Future<dynamic> alertDialogWithFields(
     {@required BuildContext context,
     @required onPressedOk,
     String title,
-    String hintText}) {
+    String hintText,
+    bool enabled}) {
   return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -120,6 +121,7 @@ Future<dynamic> alertDialogFields(
                   Padding(
                     padding: EdgeInsets.only(right: 15),
                     child: TextField(
+                      enabled: enabled ?? true,
                       controller: dialogAmountController,
                       decoration: InputDecoration(
                         hintText: "Amount",
@@ -131,6 +133,9 @@ Future<dynamic> alertDialogFields(
                       inputFormatters: [
                         amountInputFormatter,
                       ],
+                      style: TextStyle(
+                        color: enabled ?? true ? Colors.black : Colors.grey,
+                      ),
                     ),
                   ),
                   Padding(
