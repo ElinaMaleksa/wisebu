@@ -36,7 +36,6 @@ class SetupScreenState extends State<SetupScreen> {
       isExpenses = false;
       itemsList = incomes;
     }
-
     super.initState();
   }
 

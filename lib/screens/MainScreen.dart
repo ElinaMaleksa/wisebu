@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
-import 'package:wisebu/screens/AddRecordScreen.dart';
+import 'package:wisebu/screens/OneRecordScreen.dart';
 import 'package:wisebu/screens/DetailsScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
@@ -300,43 +300,51 @@ class MainScreenState extends State<MainScreen> {
                 child: IconButton(
                   visualDensity: VisualDensity(horizontal: -4),
                   onPressed: () {
-                    dialogTitleController.clear();
-                    dialogAmountController.clear();
+                    if (type == incomeType) {
+                      dialogTitleController.clear();
+                      dialogAmountController.clear();
 
-                    alertDialogWithFields(
-                      context: context,
-                      title: type == expenseType
-                          ? expenseDialogTitle
-                          : incomeDialogTitle,
-                      hintText: type == expenseType ? expenseType : incomeType,
-                      onPressedOk: () {
-                        hideKeyboard(context);
+                      alertDialogWithFields(
+                        context: context,
+                        title: type == expenseType
+                            ? expenseDialogTitle
+                            : incomeDialogTitle,
+                        hintText:
+                            type == expenseType ? expenseType : incomeType,
+                        onPressedOk: () {
+                          hideKeyboard(context);
 
-                        bool alreadyExists = doExist(
-                            title: titleFromDialog(type),
-                            type: type,
-                            itemsList: dataList);
+                          bool alreadyExists = doExist(
+                              title: titleFromDialog(type),
+                              type: type,
+                              itemsList: dataList);
 
-                        if (alreadyExists) {
-                          Navigator.pop(context);
-                          simpleAlertDialog(
-                              context: context,
-                              onPressedOk: () => Navigator.pop(context),
-                              title: "Sorry",
-                              contentText: "Category already exists.");
-                        } else {
-                          Category category = Category(
-                            title: titleFromDialog(type),
-                            type: type,
-                            amount: amountFromDialog(),
-                            date: dateWithZeroTime(dateTimeNow).toString(),
-                          );
-                          dbInsertRecord(category);
-                          resetData();
-                          Navigator.pop(context);
-                        }
-                      },
-                    );
+                          if (alreadyExists) {
+                            Navigator.pop(context);
+                            simpleAlertDialog(
+                                context: context,
+                                onPressedOk: () => Navigator.pop(context),
+                                title: "Sorry",
+                                contentText: "Category already exists.");
+                          } else {
+                            Category category = Category(
+                              title: titleFromDialog(type),
+                              type: type,
+                              amount: amountFromDialog(),
+                              date: dateWithZeroTime(dateTimeNow).toString(),
+                            );
+                            dbInsertRecord(category);
+                            resetData();
+                            Navigator.pop(context);
+                          }
+                        },
+                      );
+                    } else
+                      // go to add record screen to add new expense
+                      push(
+                        context: context,
+                        nextScreen: OneRecordScreen(isNewExpense: true),
+                      );
                   },
                   icon: Icon(Icons.add_circle, size: 35, color: typeColor),
                 ),
@@ -361,9 +369,10 @@ class MainScreenState extends State<MainScreen> {
                     if (type == expenseType)
                       push(
                           context: context,
-                          nextScreen: AddRecordScreen(
+                          nextScreen: OneRecordScreen(
                             expenseList: dataList,
                             expenseCategoryTitle: dataList[index].title,
+                            isNewExpense: false,
                           ));
                   },
                   onTitlePressed: () {
@@ -391,6 +400,7 @@ class MainScreenState extends State<MainScreen> {
                             index: dataList[index].id,
                             title: dialogTitleController.text ?? "Income",
                             amount: amountFromDialog(),
+                            date: dataList[index].date,
                           ).then((_) {
                             resetData();
                             Navigator.pop(context);

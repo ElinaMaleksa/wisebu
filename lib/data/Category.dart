@@ -6,6 +6,7 @@ class Category {
   String type; // income or expense
   String date;
   double amount;
+  String description;
 
   Category({
     this.id,
@@ -13,6 +14,7 @@ class Category {
     @required this.type,
     @required this.date,
     @required this.amount,
+    this.description,
   });
 
   Map<String, dynamic> categoryToMap() {
@@ -22,6 +24,7 @@ class Category {
       'type': type,
       'date': date,
       'amount': amount,
+      'description': description,
     };
   }
 }

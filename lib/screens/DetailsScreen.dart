@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
-import 'package:wisebu/screens/AddRecordScreen.dart';
+import 'package:wisebu/screens/OneRecordScreen.dart';
 import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
@@ -23,6 +23,7 @@ class DetailsScreen extends StatefulWidget {
 }
 
 class DetailsScreenState extends State<DetailsScreen> {
+  List<Category> expenseList = [];
   Future<List<Category>> futureList;
   List<Category> itemsList = [];
   double total = 0;
@@ -47,6 +48,7 @@ class DetailsScreenState extends State<DetailsScreen> {
 
   @override
   void initState() {
+    expenseList = widget.expenseList;
     categoryTitle = widget.title;
     setData();
     super.initState();
@@ -87,10 +89,17 @@ class DetailsScreenState extends State<DetailsScreen> {
                             index: i.id,
                             title: dialogTitleController.text ?? categoryTitle,
                             amount: i.amount,
+                            description: i.description,
+                            date: i.date,
                           );
 
-                        // update category title and reset data
                         setState(() {
+                          // update titles in expenseList to "Add expense" work properly
+                          for (var i in expenseList)
+                            if (i.title == categoryTitle)
+                              i.title = dialogTitleController.text;
+
+                          // update category title
                           categoryTitle =
                               dialogTitleController.text ?? categoryTitle;
                         });
@@ -161,7 +170,14 @@ class DetailsScreenState extends State<DetailsScreen> {
                             ),
                             child: InkWell(
                               onTap: () {
-                                setState(() {
+                                push(
+                                  context: context,
+                                  nextScreen: OneRecordScreen(
+                                    isNewExpense: false,
+                                    category: itemsList[index],
+                                  ),
+                                );
+                                /*  setState(() {
                                   dialogTitleController.text =
                                       itemsList[index].title;
                                   dialogAmountController.text =
@@ -182,7 +198,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                                       Navigator.pop(context);
                                     });
                                   },
-                                );
+                                );*/
                               },
                               onLongPress: () {
                                 simpleAlertDialog(
@@ -198,12 +214,43 @@ class DetailsScreenState extends State<DetailsScreen> {
                                     contentText:
                                         "This record will be gone forever.");
                               },
-                              child: ListTile(
-                                title: Text(
-                                  formattedDate(itemsList[index].date),
-                                ),
-                                trailing: Text(
-                                  "${itemsList[index].amount.toStringAsFixed(2)} €",
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 20),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      flex: 3,
+                                      child: FittedBox(
+                                        child: Text(
+                                          formattedDate(itemsList[index].date),
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                    ),
+                                    Flexible(
+                                      flex: 5,
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          itemsList[index].description ?? "",
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .accentColor),
+                                        ),
+                                      ),
+                                    ),
+                                    Flexible(
+                                      flex: 2,
+                                      child: FittedBox(
+                                        child: Text(
+                                          "${itemsList[index].amount.toStringAsFixed(2)} €",
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -218,9 +265,10 @@ class DetailsScreenState extends State<DetailsScreen> {
                       onPressed: () {
                         push(
                           context: context,
-                          nextScreen: AddRecordScreen(
-                            expenseList: widget.expenseList,
+                          nextScreen: OneRecordScreen(
+                            expenseList: expenseList,
                             expenseCategoryTitle: categoryTitle,
+                            isNewExpense: false,
                           ),
                         );
                       },

@@ -5,7 +5,8 @@ import 'package:wisebu/data/Category.dart';
 
 Database db;
 final databaseName = 'wisebu_db.db';
-final databaseVersion = 1;
+final firstDatabaseVersion = 1;
+final secondDatabaseVersion = 2;
 final tableCategories = 'categories';
 
 final columnId = "id";
@@ -13,17 +14,27 @@ final columnTitle = "title";
 final columnType = "type";
 final columnDate = "date";
 final columnAmount = "amount";
+final columnDescription = "description";
 
-void createDb(Database db) {
-  db.execute('''
+void createDb(Database db, int version) {
+  if (version == 1) db.execute('''
         CREATE TABLE $tableCategories(
         $columnId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, 
         $columnTitle TEXT NOT NULL, 
         $columnType TEXT NOT NULL, 
         $columnDate TEXT NOT NULL,
-        $columnAmount REAL NOT NULL
+        $columnAmount REAL NOT NULL,
+        $columnDescription TEXT
         )
        ''');
+}
+
+// upgrade database table
+void upgradeDb(Database db, int oldVersion, int newVersion) {
+  // add column "description" on second db version
+  if (oldVersion == firstDatabaseVersion)
+    db.execute(
+        "ALTER TABLE $tableCategories ADD COLUMN $columnDescription TEXT");
 }
 
 Future<Database> initializeDatabase() async {
@@ -32,8 +43,10 @@ Future<Database> initializeDatabase() async {
     join(await getDatabasesPath(), databaseName),
 
     // when the database is first created, create a table
-    onCreate: (db, version) => createDb(db),
-    version: databaseVersion,
+    onCreate: (db, version) => createDb(db, version),
+    // upgrade database
+    onUpgrade: (db, version, newVersion) => upgradeDb(db, version, newVersion),
+    version: secondDatabaseVersion,
   );
   return database;
 }
@@ -72,12 +85,12 @@ Future<List<Category>> dbGetRecordsByType(String type, String date) async {
   // Convert the List<Map<String, dynamic> into a List<Category>
   return List.generate(maps.length, (i) {
     return Category(
-      id: maps[i]['$columnId'],
-      title: maps[i]['$columnTitle'],
-      type: maps[i]['$columnType'],
-      date: maps[i]['$columnDate'],
-      amount: maps[i]['$columnAmount'],
-    );
+        id: maps[i]['$columnId'],
+        title: maps[i]['$columnTitle'],
+        type: maps[i]['$columnType'],
+        date: maps[i]['$columnDate'],
+        amount: maps[i]['$columnAmount'],
+        description: maps[i]['$columnDescription']);
   });
 }
 
@@ -98,6 +111,7 @@ Future<List<Category>> dbGetRecordsByTitle(String title, String date) async {
       type: maps[i]['$columnType'],
       date: maps[i]['$columnDate'],
       amount: maps[i]['$columnAmount'],
+      description: maps[i]['$columnDescription'],
     );
   });
 }
@@ -105,7 +119,9 @@ Future<List<Category>> dbGetRecordsByTitle(String title, String date) async {
 Future<void> dbUpdateRecord(
     {@required int index,
     @required String title,
-    @required double amount}) async {
+    @required double amount,
+    @required String date,
+    String description}) async {
   db = await initializeDatabase();
 
   String whereStatement = '$columnId = ?';
@@ -114,6 +130,8 @@ Future<void> dbUpdateRecord(
   Map<String, dynamic> record = {
     columnTitle: title,
     columnAmount: amount,
+    columnDescription: description ?? "",
+    columnDate: date,
   };
 
   await db.update(
@@ -155,7 +173,8 @@ Future<void> dbInsertRecord(Category category) async {
     '$columnTitle': category.title,
     '$columnType': category.type,
     '$columnDate': category.date,
-    '$columnAmount': category.amount
+    '$columnAmount': category.amount,
+    '$columnDescription': category.description ?? ""
   };
 
   await db.insert(
