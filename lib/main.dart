@@ -11,10 +11,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'WiseBu',
       theme: ThemeData(
+        fontFamily: "Spartan",
         primarySwatch: Colors.blue,
         primaryColor: Color(0xFF0072B1),
         accentColor: Color(0xFFF3C623),
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        // color for date picker same as primaryColor
+        colorScheme: ColorScheme.light(
+          primary: Color(0xFF0072B1),
+        ),
       ),
       home: SplashScreen(),
     );

@@ -41,10 +41,7 @@ class MainScreenState extends State<MainScreen> {
     if (widget.showSnackBar != null && widget.showSnackBar)
       // set delay to get context
       Future.delayed(Duration.zero, () {
-        snackBar(
-            context: context,
-            infoMessage: widget.snackBarMessage,
-            backgroundColor: Theme.of(context).primaryColor);
+        snackBar(context: context, infoMessage: widget.snackBarMessage);
       });
 
     super.initState();
@@ -119,21 +116,30 @@ class MainScreenState extends State<MainScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          headerIcon(
-              context: context,
-              iconData: Icons.arrow_back_ios,
-              isForward: false),
-          Text(
-            DateFormat('MMMM, y').format(dateTimeNow),
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 20,
+          Flexible(
+            flex: 2,
+            child: headerIcon(
+                context: context,
+                iconData: Icons.arrow_back_ios,
+                isForward: false),
+          ),
+          Flexible(
+            flex: 6,
+            child: Text(
+              DateFormat('MMMM, y').format(dateTimeNow),
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+              ),
             ),
           ),
-          headerIcon(
-              context: context,
-              iconData: Icons.arrow_forward_ios,
-              isForward: true),
+          Flexible(
+            flex: 2,
+            child: headerIcon(
+                context: context,
+                iconData: Icons.arrow_forward_ios,
+                isForward: true),
+          ),
         ],
       ),
     );
@@ -191,7 +197,8 @@ class MainScreenState extends State<MainScreen> {
                       ListTile(
                         visualDensity:
                             VisualDensity(horizontal: -4, vertical: -4),
-                        title: Text("${totalIncomes.toStringAsFixed(2)} €"),
+                        title:
+                            Text("${amountTextShown(amount: totalIncomes)} €"),
                         leading: Container(
                           color: Theme.of(context).primaryColor,
                           width: 20,
@@ -203,7 +210,8 @@ class MainScreenState extends State<MainScreen> {
                       ListTile(
                         visualDensity:
                             VisualDensity(horizontal: -4, vertical: -4),
-                        title: Text("${totalExpenses.toStringAsFixed(2)} €"),
+                        title:
+                            Text("${amountTextShown(amount: totalExpenses)} €"),
                         leading: Container(
                           color: Theme.of(context).accentColor,
                           width: 20,
@@ -215,9 +223,8 @@ class MainScreenState extends State<MainScreen> {
                 circleAvatar(
                   color: Theme.of(context).primaryColor,
                   textColor: Colors.white,
-                  // round a double with toStringAsFixed(2)
                   mainText:
-                      "${(totalIncomes - totalExpenses).toStringAsFixed(2)} €",
+                      "${amountTextShown(amount: totalIncomes - totalExpenses)} €",
                   secondText: "left",
                 )
               ],
@@ -343,7 +350,13 @@ class MainScreenState extends State<MainScreen> {
                       // go to add record screen to add new expense
                       push(
                         context: context,
-                        nextScreen: OneRecordScreen(isNewExpense: true),
+                        nextScreen: OneRecordScreen(
+                          isNewExpenseCategory: true,
+                          date: dateTimeNow.year == DateTime.now().year &&
+                                  dateTimeNow.month == DateTime.now().month
+                              ? DateTime.now().toString()
+                              : dateWithZeroTime(dateTimeNow).toString(),
+                        ),
                       );
                   },
                   icon: Icon(Icons.add_circle, size: 35, color: typeColor),
@@ -363,19 +376,26 @@ class MainScreenState extends State<MainScreen> {
                   context: context,
                   isExpense: type == incomeType ? false : true,
                   title: dataList[index].title,
-                  moneyAmount: "${dataList[index].amount.toStringAsFixed(2)} €",
+                  moneyAmount:
+                      "${amountTextShown(amount: dataList[index].amount)} €",
                   color: typeColor,
                   onIconPressed: () {
+                    // add new expense in existing category
                     if (type == expenseType)
                       push(
                           context: context,
                           nextScreen: OneRecordScreen(
                             expenseList: dataList,
                             expenseCategoryTitle: dataList[index].title,
-                            isNewExpense: false,
+                            date: dateTimeNow.year == DateTime.now().year &&
+                                    dateTimeNow.month == DateTime.now().month
+                                ? DateTime.now().toString()
+                                : dateWithZeroTime(dateTimeNow).toString(),
+                            isNewExpenseCategory: false,
                           ));
                   },
                   onTitlePressed: () {
+                    // show all expenses for selected category in DetailsScreen
                     if (type == expenseType)
                       push(
                         context: context,

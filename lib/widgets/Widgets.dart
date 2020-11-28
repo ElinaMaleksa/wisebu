@@ -19,6 +19,7 @@ Widget yellowButton(
     height: 50,
     width: MediaQuery.of(context).size.width * (isLarge ? 0.7 : 0.3),
     child: RaisedButton(
+      elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
       ),
@@ -111,6 +112,8 @@ Future<dynamic> alertDialogWithFields(
                   Padding(
                     padding: EdgeInsets.only(right: 15, top: 10),
                     child: TextField(
+                      autocorrect: false,
+                      textCapitalization: TextCapitalization.sentences,
                       controller: dialogTitleController,
                       decoration: InputDecoration(
                         hintText: hintText ?? "",
@@ -212,10 +215,20 @@ String formattedDate(String date) =>
 Widget snackBar(
     {@required BuildContext context,
     @required String infoMessage,
-    @required Color backgroundColor}) {
+    Color backgroundColor}) {
   return Flushbar(
     message: infoMessage,
-    backgroundColor: backgroundColor,
+    backgroundColor: backgroundColor ?? Theme.of(context).primaryColor,
     duration: Duration(seconds: 3),
   )..show(context);
+}
+
+String amountTextShown({@required double amount}) {
+  // round a double with toStringAsFixed(2)
+  String value = amount.toStringAsFixed(2);
+  String lastChars = value.substring(value.length - 3, value.length);
+  if (lastChars == ".00")
+    return value.substring(0, value.length - 3);
+  else
+    return value;
 }

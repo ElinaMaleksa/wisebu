@@ -17,7 +17,7 @@ final columnAmount = "amount";
 final columnDescription = "description";
 
 void createDb(Database db, int version) {
-  if (version == 1) db.execute('''
+  db.execute('''
         CREATE TABLE $tableCategories(
         $columnId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, 
         $columnTitle TEXT NOT NULL, 

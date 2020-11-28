@@ -2,7 +2,6 @@ import 'package:clippy_flutter/clippy_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
-import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/screens/OneRecordScreen.dart';
 import 'package:wisebu/screens/MainScreen.dart';
@@ -141,7 +140,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                         child: circleAvatar(
                             color: Colors.white,
                             textColor: Theme.of(context).accentColor,
-                            mainText: "-${total.toStringAsFixed(2)} €"),
+                            mainText: "-${amountTextShown(amount: total)} €"),
                       ),
                     )
                   ],
@@ -173,32 +172,10 @@ class DetailsScreenState extends State<DetailsScreen> {
                                 push(
                                   context: context,
                                   nextScreen: OneRecordScreen(
-                                    isNewExpense: false,
+                                    isNewExpenseCategory: false,
                                     category: itemsList[index],
                                   ),
                                 );
-                                /*  setState(() {
-                                  dialogTitleController.text =
-                                      itemsList[index].title;
-                                  dialogAmountController.text =
-                                      itemsList[index].amount.toString();
-                                });
-                                alertDialogWithFields(
-                                  context: context,
-                                  title: "Edit expense",
-                                  hintText: "Expense",
-                                  onPressedOk: () {
-                                    dbUpdateRecord(
-                                      index: itemsList[index].id,
-                                      title: dialogTitleController.text ??
-                                          "Expense",
-                                      amount: amountFromDialog(),
-                                    ).then((_) {
-                                      resetData();
-                                      Navigator.pop(context);
-                                    });
-                                  },
-                                );*/
                               },
                               onLongPress: () {
                                 simpleAlertDialog(
@@ -245,7 +222,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                                       flex: 2,
                                       child: FittedBox(
                                         child: Text(
-                                          "${itemsList[index].amount.toStringAsFixed(2)} €",
+                                          "${amountTextShown(amount: itemsList[index].amount)} €",
                                           maxLines: 1,
                                         ),
                                       ),
@@ -268,7 +245,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                           nextScreen: OneRecordScreen(
                             expenseList: expenseList,
                             expenseCategoryTitle: categoryTitle,
-                            isNewExpense: false,
+                            isNewExpenseCategory: false,
                           ),
                         );
                       },

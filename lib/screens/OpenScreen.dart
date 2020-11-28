@@ -43,7 +43,7 @@ class OpenScreen extends StatelessWidget {
                     ))),
             Container(
               margin: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).size.height * 0.05),
+                  bottom: MediaQuery.of(context).size.height * 0.08),
               child: yellowButton(
                   context: context,
                   isLarge: true,

@@ -7,7 +7,8 @@ import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
 class OneRecordScreen extends StatefulWidget {
-  final bool isNewExpense;
+  final bool isNewExpenseCategory;
+  final String date;
 
   // pass if is not new expense and dropdown with all categories should be shown
   final List<Category> expenseList;
@@ -17,7 +18,8 @@ class OneRecordScreen extends StatefulWidget {
   final Category category;
 
   OneRecordScreen({
-    @required this.isNewExpense,
+    @required this.isNewExpenseCategory,
+    this.date,
     this.expenseList,
     this.expenseCategoryTitle,
     this.category,
@@ -38,7 +40,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
 
   @override
   void initState() {
-    if (!widget.isNewExpense && widget.category == null) {
+    if (!widget.isNewExpenseCategory && widget.category == null) {
       dropdownValue = widget.expenseCategoryTitle;
       widget.expenseList.forEach((item) {
         categoryTitles.add(item.title);
@@ -52,7 +54,8 @@ class OneRecordScreenState extends State<OneRecordScreen> {
       amountController.text = category.amount.toString();
       dateTime = DateTime.parse(category.date);
     } else
-      dateTime = DateTime.now();
+      dateTime =
+          widget.date != null ? DateTime.parse(widget.date) : DateTime.now();
 
     super.initState();
   }
@@ -69,7 +72,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(widget.isNewExpense
+          title: Text(widget.isNewExpenseCategory
               ? "Add Expense"
               : category == null
                   ? "Add Expense"
@@ -87,15 +90,19 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   titleText(
-                      title: !widget.isNewExpense && category == null
+                      title: !widget.isNewExpenseCategory && category == null
                           ? "Choose a category"
                           : "Category title"),
-                  if (widget.isNewExpense || category != null)
+                  if (widget.isNewExpenseCategory || category != null)
                     TextField(
                       controller: titleController,
                       keyboardType: TextInputType.text,
+                      textCapitalization: TextCapitalization.sentences,
+                      maxLines: null,
+                      autocorrect: false,
+                      maxLength: 30,
                     ),
-                  if (!widget.isNewExpense && category == null)
+                  if (!widget.isNewExpenseCategory && category == null)
                     DropdownButton<String>(
                       value: dropdownValue,
                       icon: Icon(
@@ -124,8 +131,12 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                     children: [
                       titleText(title: "Description"),
                       TextField(
+                        textCapitalization: TextCapitalization.sentences,
                         controller: descriptionController,
                         keyboardType: TextInputType.text,
+                        autocorrect: false,
+                        maxLines: null,
+                        maxLength: 200,
                       )
                     ],
                   ),
@@ -164,7 +175,9 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             SizedBox(
                               height: 10,
                             ),
-                            datePicker(),
+                            datePicker(
+                              context: context,
+                            ),
                           ],
                         ),
                       ),
@@ -185,7 +198,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                                       Theme.of(context).accentColor);
                             else {
                               Category category = Category(
-                                title: widget.isNewExpense
+                                title: widget.isNewExpenseCategory
                                     ? titleController.text ?? "Expense"
                                     : dropdownValue,
                                 type: expenseType,
@@ -240,29 +253,42 @@ class OneRecordScreenState extends State<OneRecordScreen> {
     );
   }
 
-  Widget datePicker() {
+  Widget datePicker({@required BuildContext context}) {
+    DateTime lastDate = DateTime.now().add(Duration(days: 365));
+    DateTime firstDate = DateTime.now().subtract(Duration(days: 365));
     return OutlineButton(
       onPressed: () {
         hideKeyboard(context);
-        showDatePicker(
-                context: context,
-                initialDate: dateTime,
-                firstDate: DateTime.now().subtract(Duration(days: 365 * 5)),
-                lastDate: DateTime.now())
-            .then((pickedDate) {
-          if (pickedDate != null) {
-            setState(() {
-              dateTime = pickedDate;
-            });
-          }
-        });
+        if (dateTime.isAfter(firstDate) && dateTime.isBefore(lastDate))
+          showDatePicker(
+            context: context,
+            initialDate: dateTime,
+            firstDate: firstDate,
+            lastDate: lastDate,
+          ).then((pickedDate) {
+            if (pickedDate != null &&
+                pickedDate.isAfter(firstDate) &&
+                pickedDate.isBefore(lastDate)) {
+              setState(() {
+                dateTime = pickedDate;
+              });
+            }
+          });
+        else
+          snackBar(
+            context: context,
+            infoMessage:
+                "Date exceeds more than a year and could not be edited, sorry",
+          );
       },
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5.0),
       ),
-      child: Text(
-        formattedDate(dateTime.toString()),
-        textAlign: TextAlign.center,
+      child: FittedBox(
+        child: Text(
+          formattedDate(dateTime.toString()),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
