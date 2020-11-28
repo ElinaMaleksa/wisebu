@@ -183,7 +183,7 @@ class MainScreenState extends State<MainScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (totalIncomes - totalExpenses != 0.0)
+        if (incomeList.length > 0 || expenseList.length > 0)
           Container(
             height: 150,
             padding: EdgeInsets.all(10),
@@ -241,7 +241,7 @@ class MainScreenState extends State<MainScreen> {
             type: expenseType,
             dataList: expenseList,
             typeColor: Theme.of(context).accentColor),
-        if (totalIncomes - totalExpenses == 0.0)
+        if (incomeList.isEmpty && expenseList.isEmpty)
           Container(
             alignment: Alignment.center,
             padding: EdgeInsets.only(top: 20),

@@ -52,9 +52,14 @@ Widget circleAvatar(
         children: [
           Expanded(
             child: FittedBox(
+              fit: BoxFit.scaleDown,
               child: Text(
                 mainText,
-                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 25,
+                ),
               ),
             ),
           ),
