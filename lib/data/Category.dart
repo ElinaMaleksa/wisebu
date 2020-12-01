@@ -17,6 +17,15 @@ class Category {
     this.description,
   });
 
+  factory Category.fromMap(Map<String, dynamic> map) => Category(
+        id: map["id"],
+        title: map["title"],
+        type: map["type"],
+        date: map["date"],
+        amount: map["amount"],
+        description: map["description"],
+      );
+
   Map<String, dynamic> categoryToMap() {
     return {
       'id': id,

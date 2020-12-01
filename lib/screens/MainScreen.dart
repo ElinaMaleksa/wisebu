@@ -5,6 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
+import 'package:wisebu/data/blocs/bloc_provider.dart';
+import 'package:wisebu/data/blocs/categories_bloc.dart';
+import 'package:wisebu/screens/AnalyticsScreen.dart';
 import 'package:wisebu/screens/OneRecordScreen.dart';
 import 'package:wisebu/screens/DetailsScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
@@ -65,28 +68,32 @@ class MainScreenState extends State<MainScreen> {
         appBar: AppBar(
           title: Text("BUDGET"),
           actions: [
-            Tooltip(
-              message: "Go to current month",
-              child: InkWell(
-                customBorder: CircleBorder(),
-                child: Padding(
-                  padding: EdgeInsets.all(15),
-                  child: Icon(
-                    Icons.calendar_today,
-                    color: Colors.white,
+            inkwellIcon(
+              tooltip: "Open analytics",
+              iconData: Icons.analytics_outlined,
+              onTap: () {
+                push(
+                  context: context,
+                  nextScreen: BlocProvider(
+                    bloc: CategoriesBloc(),
+                    child: AnalyticsScreen(title: "Categories",),
                   ),
-                ),
-                onTap: () {
-                  if (dateTimeNow.toString().substring(0, 7) !=
-                      DateTime.now().toString().substring(0, 7)) {
-                    setState(() {
-                      dateTimeNow = DateTime.now();
-                    });
-                    resetData();
-                  }
-                },
-              ),
-            )
+                );
+              },
+            ),
+            inkwellIcon(
+              tooltip: "Go to current month",
+              iconData: Icons.calendar_today,
+              onTap: () {
+                if (dateTimeNow.toString().substring(0, 7) !=
+                    DateTime.now().toString().substring(0, 7)) {
+                  setState(() {
+                    dateTimeNow = DateTime.now();
+                  });
+                  resetData();
+                }
+              },
+            ),
           ],
           // do not show leading back icon in appBar
           automaticallyImplyLeading: false,
@@ -129,7 +136,7 @@ class MainScreenState extends State<MainScreen> {
               DateFormat('MMMM, y').format(dateTimeNow),
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 20,
+                fontSize: 18,
               ),
             ),
           ),
@@ -197,8 +204,10 @@ class MainScreenState extends State<MainScreen> {
                       ListTile(
                         visualDensity:
                             VisualDensity(horizontal: -4, vertical: -4),
-                        title:
-                            Text("${amountTextShown(amount: totalIncomes)} €"),
+                        title: Text(
+                          "${amountTextShown(amount: totalIncomes)} €",
+                          style: TextStyle(fontSize: 16),
+                        ),
                         leading: Container(
                           color: Theme.of(context).primaryColor,
                           width: 20,
@@ -210,8 +219,10 @@ class MainScreenState extends State<MainScreen> {
                       ListTile(
                         visualDensity:
                             VisualDensity(horizontal: -4, vertical: -4),
-                        title:
-                            Text("${amountTextShown(amount: totalExpenses)} €"),
+                        title: Text(
+                          "${amountTextShown(amount: totalExpenses)} €",
+                          style: TextStyle(fontSize: 16),
+                        ),
                         leading: Container(
                           color: Theme.of(context).accentColor,
                           width: 20,
@@ -250,6 +261,7 @@ class MainScreenState extends State<MainScreen> {
                 SizedBox(
                   width: 250,
                   child: Container(
+                    padding: EdgeInsets.only(bottom: 10),
                     foregroundDecoration: BoxDecoration(
                       color: Colors.grey,
                       backgroundBlendMode: BlendMode.saturation,
@@ -263,7 +275,7 @@ class MainScreenState extends State<MainScreen> {
                   "NOTHING TO SHOW",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                    fontSize: 15,
                     color: Colors.grey,
                   ),
                 )
@@ -529,7 +541,7 @@ Widget listTileMainScreen(
                   flex: 7,
                   child: Text(
                     title,
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
                 Flexible(
@@ -537,7 +549,7 @@ Widget listTileMainScreen(
                   child: FittedBox(
                     child: Text(
                       moneyAmount,
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 15),
                     ),
                   ),
                 ),

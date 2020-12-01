@@ -199,7 +199,9 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             else {
                               Category category = Category(
                                 title: widget.isNewExpenseCategory
-                                    ? titleController.text ?? "Expense"
+                                    ? titleController.text.length == 0
+                                        ? "Expense"
+                                        : titleController.text
                                     : dropdownValue,
                                 type: expenseType,
                                 date: dateTime.toString(),
@@ -221,7 +223,9 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                           } else {
                             dbUpdateRecord(
                               index: category.id,
-                              title: titleController.text ?? "Expense",
+                              title: titleController.text.length == 0
+                                  ? "Expense"
+                                  : titleController.text,
                               amount: double.parse(amountController.text),
                               description: descriptionController.text ?? "",
                               date: dateTime.toString(),

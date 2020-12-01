@@ -183,3 +183,14 @@ Future<void> dbInsertRecord(Category category) async {
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
 }
+
+getAllCategories() async {
+  db = await initializeDatabase();
+
+  var res = await db.query(tableCategories);
+  List<Category> categories =
+      res.isNotEmpty ? res.map((c) => Category.fromMap(c)).toList() : [];
+  for (var c in categories) print("CATEGORIES: ${c.title}");
+
+  return categories;
+}

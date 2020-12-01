@@ -66,7 +66,7 @@ Widget circleAvatar(
           if (secondText != null)
             Text(
               secondText,
-              style: TextStyle(color: textColor, fontSize: 18),
+              style: TextStyle(color: textColor, fontSize: 16),
             ),
         ],
       ),
@@ -237,3 +237,16 @@ String amountTextShown({@required double amount}) {
   else
     return value;
 }
+
+Widget inkwellIcon(
+        {@required String tooltip,
+        @required IconData iconData,
+        @required onTap}) =>
+    Tooltip(
+        message: tooltip,
+        child: InkWell(
+            customBorder: CircleBorder(),
+            child: Padding(
+                padding: EdgeInsets.all(15),
+                child: Icon(iconData, color: Colors.white)),
+            onTap: onTap));

@@ -61,55 +61,49 @@ class DetailsScreenState extends State<DetailsScreen> {
         appBar: AppBar(
           title: Text("Category details"),
           actions: [
-            Tooltip(
-              message: "Edit category title",
-              child: InkWell(
-                customBorder: CircleBorder(),
-                child: Padding(
-                  padding: EdgeInsets.all(15),
-                  child: Icon(Icons.edit),
-                ),
-                onTap: () {
-                  setState(() {
-                    dialogTitleController.text = categoryTitle;
-                    dialogAmountController.text = total.toString();
-                  });
-                  alertDialogWithFields(
-                    context: context,
-                    title: "Edit category title",
-                    hintText: "Category title",
-                    enabled: false,
-                    onPressedOk: () async {
-                      if (dialogTitleController.text != categoryTitle &&
-                          dialogTitleController.text.isNotEmpty) {
-                        // update record titles in db to new title
-                        for (var i in itemsList)
-                          await dbUpdateRecord(
-                            index: i.id,
-                            title: dialogTitleController.text ?? categoryTitle,
-                            amount: i.amount,
-                            description: i.description,
-                            date: i.date,
-                          );
+            inkwellIcon(
+              tooltip: "Edit category title",
+              iconData: Icons.edit,
+              onTap: () {
+                setState(() {
+                  dialogTitleController.text = categoryTitle;
+                  dialogAmountController.text = total.toString();
+                });
+                alertDialogWithFields(
+                  context: context,
+                  title: "Edit category title",
+                  hintText: "Category title",
+                  enabled: false,
+                  onPressedOk: () async {
+                    if (dialogTitleController.text != categoryTitle &&
+                        dialogTitleController.text.isNotEmpty) {
+                      // update record titles in db to new title
+                      for (var i in itemsList)
+                        await dbUpdateRecord(
+                          index: i.id,
+                          title: dialogTitleController.text ?? categoryTitle,
+                          amount: i.amount,
+                          description: i.description,
+                          date: i.date,
+                        );
 
-                        setState(() {
-                          // update titles in expenseList to "Add expense" work properly
-                          for (var i in expenseList)
-                            if (i.title == categoryTitle)
-                              i.title = dialogTitleController.text;
+                      setState(() {
+                        // update titles in expenseList to "Add expense" work properly
+                        for (var i in expenseList)
+                          if (i.title == categoryTitle)
+                            i.title = dialogTitleController.text;
 
-                          // update category title
-                          categoryTitle =
-                              dialogTitleController.text ?? categoryTitle;
-                        });
-                        resetData();
-                      }
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-            )
+                        // update category title
+                        categoryTitle =
+                            dialogTitleController.text ?? categoryTitle;
+                      });
+                      resetData();
+                    }
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
           ],
         ),
         body: Column(
