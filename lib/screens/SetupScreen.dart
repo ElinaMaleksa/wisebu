@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
-import 'package:wisebu/data/DatabaseHelper.dart';
+import 'package:wisebu/data/blocs/BlocProvider.dart';
+import 'package:wisebu/data/blocs/CategoriesBloc.dart';
 import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
@@ -57,7 +58,7 @@ class SetupScreenState extends State<SetupScreen> {
                 physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: itemsList.length,
-                itemBuilder: (context, index) {
+                itemBuilder: (cont, index) {
                   return Container(
                     decoration: BoxDecoration(
                       border: Border(
@@ -213,11 +214,14 @@ class SetupScreenState extends State<SetupScreen> {
                 context: context,
                 onPressed: () {
                   if (isExpenses) {
-                    dbInsertCategories(
-                            incomes: widget.incomesList,
-                            expenses: selectedExpenses)
-                        .then((value) =>
-                            push(context: context, nextScreen: MainScreen()));
+                    pushReplacement(
+                        context: context,
+                        nextScreen: BlocProvider(
+                            bloc: CategoriesBloc(),
+                            child: MainScreen(
+                              incomesSetUpList: widget.incomesList,
+                              expensesSetUpList: selectedExpenses,
+                            )));
                   } else
                     push(
                       context: context,

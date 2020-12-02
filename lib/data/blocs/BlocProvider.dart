@@ -15,18 +15,18 @@ class BlocProvider<T extends BlocBase> extends StatefulWidget {
   final Widget child;
 
   @override
-  _BlocProviderState<T> createState() => _BlocProviderState<T>();
+  BlocProviderState<T> createState() => BlocProviderState<T>();
 
   static T of<T extends BlocBase>(BuildContext context) {
-    final type = _typeOf<BlocProvider<T>>();
+    final type = typeOf<BlocProvider<T>>();
     BlocProvider<T> provider = context.ancestorWidgetOfExactType(type);
     return provider.bloc;
   }
 
-  static Type _typeOf<T>() => T;
+  static Type typeOf<T>() => T;
 }
 
-class _BlocProviderState<T> extends State<BlocProvider<BlocBase>> {
+class BlocProviderState<T> extends State<BlocProvider<BlocBase>> {
   @override
   void dispose() {
     widget.bloc.dispose();

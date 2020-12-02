@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
-import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/DatabaseHelper.dart';
+import 'package:wisebu/data/Data.dart';
+import 'package:wisebu/data/blocs/BlocProvider.dart';
+import 'package:wisebu/data/blocs/CategoriesBloc.dart';
 import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
@@ -30,6 +32,8 @@ class OneRecordScreen extends StatefulWidget {
 }
 
 class OneRecordScreenState extends State<OneRecordScreen> {
+  CategoriesBloc categoriesBloc;
+
   TextEditingController titleController = TextEditingController();
   TextEditingController amountController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -40,6 +44,8 @@ class OneRecordScreenState extends State<OneRecordScreen> {
 
   @override
   void initState() {
+    categoriesBloc = BlocProvider.of<CategoriesBloc>(context);
+
     if (!widget.isNewExpenseCategory && widget.category == null) {
       dropdownValue = widget.expenseCategoryTitle;
       widget.expenseList.forEach((item) {
@@ -70,184 +76,196 @@ class OneRecordScreenState extends State<OneRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.isNewExpenseCategory
-              ? "Add Expense"
-              : category == null
-                  ? "Add Expense"
-                  : "Edit expense"),
-        ),
-        body: GestureDetector(
-          onTap: () {
-            // hide keyboard when tapped outside of text field
-            hideKeyboard(context);
-          },
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  titleText(
-                      title: !widget.isNewExpenseCategory && category == null
-                          ? "Choose a category"
-                          : "Category title"),
-                  if (widget.isNewExpenseCategory || category != null)
-                    TextField(
-                      controller: titleController,
-                      keyboardType: TextInputType.text,
-                      textCapitalization: TextCapitalization.sentences,
-                      maxLines: null,
-                      autocorrect: false,
-                      maxLength: 30,
-                    ),
-                  if (!widget.isNewExpenseCategory && category == null)
-                    DropdownButton<String>(
-                      value: dropdownValue,
-                      icon: Icon(
-                        Icons.arrow_drop_down,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      iconSize: 30,
-                      elevation: 16,
-                      isExpanded: true,
-                      onChanged: (String newValue) {
-                        setState(() {
-                          dropdownValue = newValue;
-                        });
-                      },
-                      items: categoryTitles
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    ),
-                  SizedBox(height: 25),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      titleText(title: "Description"),
+    return WillPopScope(
+      onWillPop: () {
+        Navigator.of(context).pop(true);
+        return Future.value(false);
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.isNewExpenseCategory
+                ? "Add Expense"
+                : category == null
+                    ? "Add Expense"
+                    : "Edit expense"),
+          ),
+          body: GestureDetector(
+            onTap: () {
+              // hide keyboard when tapped outside of text field
+              hideKeyboard(context);
+            },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    titleText(
+                        title: !widget.isNewExpenseCategory && category == null
+                            ? "Choose a category"
+                            : "Category title"),
+                    if (widget.isNewExpenseCategory || category != null)
                       TextField(
-                        textCapitalization: TextCapitalization.sentences,
-                        controller: descriptionController,
+                        controller: titleController,
                         keyboardType: TextInputType.text,
-                        autocorrect: false,
+                        textCapitalization: TextCapitalization.sentences,
                         maxLines: null,
-                        maxLength: 200,
-                      )
-                    ],
-                  ),
-                  SizedBox(height: 25),
-                  Row(
-                    children: [
-                      Flexible(
-                        flex: 6,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            titleText(title: "Amount"),
-                            TextField(
-                              maxLines: 1,
-                              controller: amountController,
-                              decoration: InputDecoration(
-                                suffixIcon: Icon(Icons.euro_symbol, size: 15),
-                              ),
-                              keyboardType: TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              inputFormatters: [
-                                amountInputFormatter,
-                              ],
-                            ),
-                          ],
-                        ),
+                        autocorrect: false,
+                        maxLength: 30,
                       ),
-                      Expanded(child: SizedBox()),
-                      Flexible(
-                        flex: 4,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            titleText(title: "Date"),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            datePicker(
-                              context: context,
-                            ),
-                          ],
+                    if (!widget.isNewExpenseCategory && category == null)
+                      DropdownButton<String>(
+                        value: dropdownValue,
+                        icon: Icon(
+                          Icons.arrow_drop_down,
+                          color: Theme.of(context).primaryColor,
                         ),
+                        iconSize: 30,
+                        elevation: 16,
+                        isExpanded: true,
+                        onChanged: (String newValue) {
+                          setState(() {
+                            dropdownValue = newValue;
+                          });
+                        },
+                        items: categoryTitles
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                       ),
-                    ],
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(top: 50),
-                    alignment: Alignment.bottomRight,
-                    child: yellowButton(
-                        context: context,
-                        onPressed: () {
-                          if (category == null) {
-                            if (amountController.text.isEmpty)
-                              snackBar(
-                                  context: context,
-                                  infoMessage: "Please enter a valid amount!",
-                                  backgroundColor:
-                                      Theme.of(context).accentColor);
-                            else {
-                              Category category = Category(
-                                title: widget.isNewExpenseCategory
-                                    ? titleController.text.length == 0
-                                        ? "Expense"
-                                        : titleController.text
-                                    : dropdownValue,
-                                type: expenseType,
-                                date: dateTime.toString(),
-                                amount: double.parse(amountController.text),
-                                description: descriptionController.text,
-                              );
+                    SizedBox(height: 25),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        titleText(title: "Description"),
+                        TextField(
+                          textCapitalization: TextCapitalization.sentences,
+                          controller: descriptionController,
+                          keyboardType: TextInputType.text,
+                          autocorrect: false,
+                          maxLines: null,
+                          maxLength: 200,
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 25),
+                    Row(
+                      children: [
+                        Flexible(
+                          flex: 6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              titleText(title: "Amount"),
+                              TextField(
+                                maxLines: 1,
+                                controller: amountController,
+                                decoration: InputDecoration(
+                                  suffixIcon: Icon(Icons.euro_symbol, size: 15),
+                                ),
+                                keyboardType: TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                                inputFormatters: [
+                                  amountInputFormatter,
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(child: SizedBox()),
+                        Flexible(
+                          flex: 4,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              titleText(title: "Date"),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              datePicker(
+                                context: context,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top: 50),
+                      alignment: Alignment.bottomRight,
+                      child: yellowButton(
+                          context: context,
+                          onPressed: () {
+                            if (category == null) {
+                              if (amountController.text.isEmpty)
+                                snackBar(
+                                    context: context,
+                                    infoMessage: "Please enter a valid amount!",
+                                    backgroundColor:
+                                        Theme.of(context).accentColor);
+                              else {
+                                Category category = Category(
+                                  title: widget.isNewExpenseCategory
+                                      ? titleController.text.length == 0
+                                          ? "Expense"
+                                          : titleController.text
+                                      : dropdownValue,
+                                  type: expenseType,
+                                  date: dateTime.toString(),
+                                  amount: double.parse(amountController.text),
+                                  description: descriptionController.text,
+                                );
 
-                              dbInsertRecord(category).then((_) {
+                                DatabaseHelper.db.newCategory(category);
+                                Navigator.of(context).pop(true);
+                                /* DatabaseHelper.db
+                                    .dbInsertRecord(category)
+                                    .then((_) {
+                                  pushReplacement(
+                                    context: context,
+                                    nextScreen: MainScreen(
+                                      showSnackBar: true,
+                                      snackBarMessage: "Record saved!",
+                                      dateTimeMonth: dateTime.toString(),
+                                    ),
+                                  );
+                                });*/
+                              }
+                            } else {
+                              DatabaseHelper.db
+                                  .dbUpdateRecord(
+                                index: category.id,
+                                title: titleController.text.length == 0
+                                    ? "Expense"
+                                    : titleController.text,
+                                amount: double.parse(amountController.text),
+                                description: descriptionController.text ?? "",
+                                date: dateTime.toString(),
+                              )
+                                  .then((_) {
                                 pushReplacement(
                                   context: context,
                                   nextScreen: MainScreen(
                                     showSnackBar: true,
-                                    snackBarMessage: "Record saved!",
+                                    snackBarMessage: "Record updated!",
                                     dateTimeMonth: dateTime.toString(),
                                   ),
                                 );
                               });
                             }
-                          } else {
-                            dbUpdateRecord(
-                              index: category.id,
-                              title: titleController.text.length == 0
-                                  ? "Expense"
-                                  : titleController.text,
-                              amount: double.parse(amountController.text),
-                              description: descriptionController.text ?? "",
-                              date: dateTime.toString(),
-                            ).then((_) {
-                              pushReplacement(
-                                context: context,
-                                nextScreen: MainScreen(
-                                  showSnackBar: true,
-                                  snackBarMessage: "Record updated!",
-                                  dateTimeMonth: dateTime.toString(),
-                                ),
-                              );
-                            });
-                          }
-                        },
-                        text: "Save"),
-                  )
-                ],
+                          },
+                          text: "Save"),
+                    )
+                  ],
+                ),
               ),
             ),
-          ),
-        ));
+          )),
+    );
   }
 
   Widget titleText({@required String title}) {

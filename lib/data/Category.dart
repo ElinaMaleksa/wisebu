@@ -26,7 +26,7 @@ class Category {
         description: map["description"],
       );
 
-  Map<String, dynamic> categoryToMap() {
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
       'title': title,

@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wisebu/data/blocs/BlocProvider.dart';
+import 'package:wisebu/data/blocs/CategoriesBloc.dart';
+import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/screens/OpenScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
-
-import 'MainScreen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -42,6 +43,12 @@ class SplashScreenState extends State<SplashScreen> {
       pushReplacement(context: context, nextScreen: OpenScreen());
       await prefs.setBool('firstOpen', false);
     } else
-      pushReplacement(context: context, nextScreen: MainScreen());
+      pushReplacement(
+        context: context,
+        nextScreen: BlocProvider(
+          bloc: CategoriesBloc(),
+          child: MainScreen(),
+        ),
+      );
   }
 }
