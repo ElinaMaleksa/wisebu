@@ -107,7 +107,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                       TextField(
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
-                              RegExp("[a-zA-Z0-9 ]"))
+                              RegExp("[a-zA-Z0-9 ,.!?]")),
                         ],
                         enabled: category == null ? true : false,
                         controller: titleController,
@@ -148,7 +148,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                         TextField(
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
-                                RegExp("[a-zA-Z0-9 ]"))
+                                RegExp("[a-zA-Z0-9 .?!,]")),
                           ],
                           textCapitalization: TextCapitalization.sentences,
                           controller: descriptionController,
@@ -208,14 +208,29 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                       child: yellowButton(
                           context: context,
                           onPressed: () {
-                            if (category == null) {
-                              if (amountController.text.isEmpty)
-                                snackBar(
-                                    context: context,
-                                    infoMessage: "Please enter a valid amount!",
-                                    backgroundColor:
-                                        Theme.of(context).accentColor);
-                              else {
+                            if (titleController.text.length > 30) {
+                              snackBar(
+                                  context: context,
+                                  infoMessage:
+                                      "Please enter a title with valid length!",
+                                  backgroundColor:
+                                      Theme.of(context).accentColor);
+                            } else if (descriptionController.text.length >
+                                200) {
+                              snackBar(
+                                  context: context,
+                                  infoMessage:
+                                      "Please enter a description with valid length!",
+                                  backgroundColor:
+                                      Theme.of(context).accentColor);
+                            } else if (amountController.text.isEmpty) {
+                              snackBar(
+                                  context: context,
+                                  infoMessage: "Please enter a valid amount!",
+                                  backgroundColor:
+                                      Theme.of(context).accentColor);
+                            } else {
+                              if (category == null) {
                                 Category category = Category(
                                   title: widget.isNewExpenseCategory
                                       ? titleController.text.length == 0
@@ -233,23 +248,23 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                                 snackBar(
                                     context: context,
                                     infoMessage: "Record saved!");
-                              }
-                            } else {
-                              categoriesBloc.handleUpdateCategory(Category(
-                                id: category.id,
-                                title: titleController.text.length == 0
-                                    ? "Expense"
-                                    : titleController.text,
-                                amount: double.parse(amountController.text),
-                                description: descriptionController.text ?? "",
-                                date: dateTime.toString(),
-                                type: category.type,
-                              ));
+                              } else {
+                                categoriesBloc.handleUpdateCategory(Category(
+                                  id: category.id,
+                                  title: titleController.text.length == 0
+                                      ? "Expense"
+                                      : titleController.text,
+                                  amount: double.parse(amountController.text),
+                                  description: descriptionController.text ?? "",
+                                  date: dateTime.toString(),
+                                  type: category.type,
+                                ));
 
-                              Navigator.of(context).pop(true);
-                              snackBar(
-                                  context: context,
-                                  infoMessage: "Record updated!");
+                                Navigator.of(context).pop(true);
+                                snackBar(
+                                    context: context,
+                                    infoMessage: "Record updated!");
+                              }
                             }
                           },
                           text: "Save"),

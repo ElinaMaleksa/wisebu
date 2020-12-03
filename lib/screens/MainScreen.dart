@@ -1,3 +1,4 @@
+import 'package:clippy_flutter/clippy_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,7 +29,7 @@ class MainScreenState extends State<MainScreen> {
 
   PageController pageController = PageController(initialPage: 999);
   bool showDateForward = true;
-  bool allowToAddNewData;
+  bool allowToEditData;
   DateTime dateTimeShowed;
 
   double totalIncomes = 0;
@@ -52,7 +53,7 @@ class MainScreenState extends State<MainScreen> {
 
     // set header date
     dateTimeShowed = DateTime.now();
-    allowToAddNewData = true;
+    allowToEditData = true;
   }
 
   @override
@@ -91,7 +92,7 @@ class MainScreenState extends State<MainScreen> {
           automaticallyImplyLeading: false,
           actions: [
             inkwellIcon(
-              tooltip: "Go to current month",
+              tooltip: "Open current month",
               iconData: Icons.calendar_today,
               onTap: () {
                 if (dateTimeShowed.toString().substring(0, 7) !=
@@ -105,7 +106,7 @@ class MainScreenState extends State<MainScreen> {
         ),
         body: Column(
           children: [
-            content(context),
+            bodyContent(context),
           ],
         ),
       ),
@@ -134,10 +135,12 @@ class MainScreenState extends State<MainScreen> {
     // group expenses by title and sum amount
     for (var i in expenseList) groupExpensesByTitle(i);
 
+    // sort lists by title
     incomeList.sort((a, b) => a.title.compareTo(b.title));
     expenseList.sort((a, b) => a.title.compareTo(b.title));
 
-    allowToAddNewData =
+    // check if user is allowed to edit or add new data
+    allowToEditData =
         dateTimeShowed.isAfter(firstDate) && dateTimeShowed.isBefore(lastDate);
   }
 
@@ -163,7 +166,7 @@ class MainScreenState extends State<MainScreen> {
       );
   }
 
-  Widget content(BuildContext context) {
+  Widget bodyContent(BuildContext context) {
     return Expanded(
       child: StreamBuilder<List<Category>>(
         stream: categoriesBloc.categories,
@@ -370,95 +373,10 @@ class MainScreenState extends State<MainScreen> {
       @required Color typeColor}) {
     return Column(
       children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 25),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: typeColor,
-                width: 3,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  type,
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: typeColor,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              Container(
-                height: 50,
-                width: 50,
-                child: allowToAddNewData
-                    ? IconButton(
-                        visualDensity: VisualDensity(horizontal: -4),
-                        onPressed: () {
-                          if (type == incomeType) {
-                            dialogTitleController.clear();
-                            dialogAmountController.clear();
-
-                            alertDialogWithFields(
-                              context: context,
-                              title: type == expenseType
-                                  ? expenseDialogTitle
-                                  : incomeDialogTitle,
-                              hintText: type == expenseType
-                                  ? expenseType
-                                  : incomeType,
-                              onPressedOk: () {
-                                hideKeyboard(context);
-
-                                bool alreadyExists = doExist(
-                                    title: titleFromDialog(type),
-                                    type: type,
-                                    itemsList: dataList);
-
-                                if (alreadyExists) {
-                                  Navigator.pop(context);
-                                  simpleAlertDialog(
-                                      context: context,
-                                      onPressedOk: () => Navigator.pop(context),
-                                      title: "Sorry",
-                                      contentText: "Category already exists.");
-                                } else {
-                                  categoriesBloc.inAddCategory.add(Category(
-                                    title: titleFromDialog(type),
-                                    type: type,
-                                    amount: amountFromDialog(),
-                                    date: dateWithZeroTime(dateTimeShowed)
-                                        .toString(),
-                                  ));
-                                  Navigator.of(context).pop();
-                                }
-                              },
-                            );
-                          } else
-                            // go to add record screen to add new expense
-                            pushToOneCategoryScreen(
-                              OneRecordScreen(
-                                isNewExpenseCategory: true,
-                                date: dateTimeShowed.year ==
-                                            DateTime.now().year &&
-                                        dateTimeShowed.month ==
-                                            DateTime.now().month
-                                    ? DateTime.now().toString()
-                                    : dateWithZeroTime(dateTimeShowed)
-                                        .toString(),
-                              ),
-                            );
-                        },
-                        icon:
-                            Icon(Icons.add_circle, size: 35, color: typeColor),
-                      )
-                    : Container(),
-              ),
-            ],
-          ),
+        categoryTitle(
+          type: type,
+          typeColor: typeColor,
+          dataList: dataList,
         ),
         ListView.builder(
           physics: NeverScrollableScrollPhysics(),
@@ -494,29 +412,31 @@ class MainScreenState extends State<MainScreen> {
                       // show all expenses for selected category in DetailsScreen
                       navigateToDetails(dataList[index]);
                     else {
-                      dialogTitleController.text = dataList[index].title;
-                      dialogAmountController.text =
-                          dataList[index].amount.toString();
-                      alertDialogWithFields(
-                        context: context,
-                        title: "Edit income",
-                        hintText: "Income",
-                        onPressedOk: () {
-                          // update income record
-                          categoriesBloc.handleUpdateCategory(
-                            Category(
-                              id: dataList[index].id,
-                              title: dialogTitleController.text ?? "Income",
-                              amount: amountFromDialog(),
-                              date: dataList[index].date,
-                              type: dataList[index].type,
-                            ),
-                          );
+                      if (allowToEditData) {
+                        dialogTitleController.text = dataList[index].title;
+                        dialogAmountController.text =
+                            dataList[index].amount.toString();
+                        alertDialogWithFields(
+                          context: context,
+                          title: "Edit income",
+                          hintText: "Income",
+                          onPressedOk: () {
+                            // update income record
+                            categoriesBloc.handleUpdateCategory(
+                              Category(
+                                id: dataList[index].id,
+                                title: dialogTitleController.text ?? "Income",
+                                amount: amountFromDialog(),
+                                date: dataList[index].date,
+                                type: dataList[index].type,
+                              ),
+                            );
 
-                          // get data from db
-                          Navigator.pop(context);
-                        },
-                      );
+                            // get data from db
+                            Navigator.pop(context);
+                          },
+                        );
+                      }
                     }
                   },
                   onLongPressed: () {
@@ -555,6 +475,7 @@ class MainScreenState extends State<MainScreen> {
             expenseList: expenseList,
             title: category.title,
             dateTimeMonth: category.date,
+            allowToEditData: allowToEditData,
           ),
         ),
       ),
@@ -619,21 +540,123 @@ class MainScreenState extends State<MainScreen> {
             ),
           ),
           trailing: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.15,
-            child: isExpense
-                ? IconButton(
-                    visualDensity: VisualDensity(horizontal: -4),
-                    onPressed: isExpense ? onIconPressed : null,
-                    icon: Icon(
-                      Icons.add_circle_outline,
-                      color: color,
-                      size: 35,
-                    ),
-                  )
+            width: 50,
+            child: isExpense && allowToEditData
+                ? inkwellIcon(
+                    tooltip: "Add expense in \"$title\"",
+                    iconData: Icons.add_circle_outline,
+                    onTap: isExpense ? onIconPressed : null,
+                    color: color)
                 : Container(),
           ),
         ),
       ),
+    );
+  }
+
+  Widget categoryTitle(
+      {@required String type,
+      @required Color typeColor,
+      @required List<Category> dataList}) {
+    return Stack(
+      children: <Widget>[
+        Arc(
+          height: 15,
+          child: Container(
+            color: typeColor,
+            height: 60,
+          ),
+        ),
+        Arc(
+          height: 15,
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            height: 57,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(right: 25, left: 25, bottom: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  type,
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: typeColor,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              Container(
+                height: 50,
+                width: 50,
+                child: allowToEditData
+                    ? inkwellIcon(
+                        tooltip:
+                            type == incomeType ? "Add income" : "Add expense",
+                        iconData: Icons.add_circle,
+                        color: typeColor,
+                        onTap: () {
+                          if (type == incomeType) {
+                            dialogTitleController.clear();
+                            dialogAmountController.clear();
+
+                            alertDialogWithFields(
+                              context: context,
+                              title: type == expenseType
+                                  ? expenseDialogTitle
+                                  : incomeDialogTitle,
+                              hintText: type == expenseType
+                                  ? expenseType
+                                  : incomeType,
+                              onPressedOk: () {
+                                hideKeyboard(context);
+
+                                bool alreadyExists = doExist(
+                                    title: titleFromDialog(type),
+                                    type: type,
+                                    itemsList: dataList);
+
+                                if (alreadyExists) {
+                                  Navigator.pop(context);
+                                  simpleAlertDialog(
+                                      context: context,
+                                      onPressedOk: () => Navigator.pop(context),
+                                      title: "Sorry",
+                                      contentText: "Category already exists.");
+                                } else {
+                                  categoriesBloc.inAddCategory.add(Category(
+                                    title: titleFromDialog(type),
+                                    type: type,
+                                    amount: amountFromDialog(),
+                                    date: dateWithZeroTime(dateTimeShowed)
+                                        .toString(),
+                                  ));
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                            );
+                          } else
+                            // go to add record screen to add new expense
+                            pushToOneCategoryScreen(
+                              OneRecordScreen(
+                                isNewExpenseCategory: true,
+                                date: dateTimeShowed.year ==
+                                            DateTime.now().year &&
+                                        dateTimeShowed.month ==
+                                            DateTime.now().month
+                                    ? DateTime.now().toString()
+                                    : dateWithZeroTime(dateTimeShowed)
+                                        .toString(),
+                              ),
+                            );
+                        })
+                    : Container(),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

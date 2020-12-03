@@ -14,11 +14,13 @@ class DetailsScreen extends StatefulWidget {
   // full expenses list for OneRecordScreen
   final List<Category> expenseList;
   final String dateTimeMonth;
+  final bool allowToEditData;
 
   DetailsScreen(
       {@required this.title,
       @required this.expenseList,
-      @required this.dateTimeMonth});
+      @required this.dateTimeMonth,
+      @required this.allowToEditData});
 
   @override
   State<StatefulWidget> createState() => DetailsScreenState();
@@ -65,43 +67,44 @@ class DetailsScreenState extends State<DetailsScreen> {
         appBar: AppBar(
           title: Text("Category details"),
           actions: [
-            inkwellIcon(
-              tooltip: "Edit category title",
-              iconData: Icons.edit,
-              onTap: () {
-                setState(() {
-                  dialogTitleController.text = categoryTitle;
-                  dialogAmountController.text = total.toString();
-                });
-                alertDialogWithFields(
-                  context: context,
-                  title: "Edit category title",
-                  hintText: "Category title",
-                  enabled: false,
-                  onPressedOk: () async {
-                    if (dialogTitleController.text != categoryTitle &&
-                        dialogTitleController.text.isNotEmpty) {
-                      // update record titles in db to new title
-                      for (var i in itemsList)
-                        categoriesBloc.handleUpdateCategory(Category(
-                          id: i.id,
-                          title: dialogTitleController.text ?? categoryTitle,
-                          amount: i.amount,
-                          description: i.description,
-                          date: i.date,
-                          type: i.type,
-                        ));
-                    }
-                    Navigator.pop(context);
-                    // go to MainScreen
-                    Navigator.of(context).pop(true);
-                    snackBar(
-                        context: context,
-                        infoMessage: "Category title updated!");
-                  },
-                );
-              },
-            ),
+            if (widget.allowToEditData)
+              inkwellIcon(
+                tooltip: "Edit category title",
+                iconData: Icons.edit,
+                onTap: () {
+                  setState(() {
+                    dialogTitleController.text = categoryTitle;
+                    dialogAmountController.text = total.toString();
+                  });
+                  alertDialogWithFields(
+                    context: context,
+                    title: "Edit category title",
+                    hintText: "Category title",
+                    enabled: false,
+                    onPressedOk: () async {
+                      if (dialogTitleController.text != categoryTitle &&
+                          dialogTitleController.text.isNotEmpty) {
+                        // update record titles in db to new title
+                        for (var i in itemsList)
+                          categoriesBloc.handleUpdateCategory(Category(
+                            id: i.id,
+                            title: dialogTitleController.text ?? categoryTitle,
+                            amount: i.amount,
+                            description: i.description,
+                            date: i.date,
+                            type: i.type,
+                          ));
+                      }
+                      Navigator.pop(context);
+                      // go to MainScreen
+                      Navigator.of(context).pop(true);
+                      snackBar(
+                          context: context,
+                          infoMessage: "Category title updated!");
+                    },
+                  );
+                },
+              ),
           ],
         ),
         body: StreamBuilder<List<Category>>(
@@ -167,35 +170,42 @@ class DetailsScreenState extends State<DetailsScreen> {
                                     ),
                                   ),
                                   child: InkWell(
-                                    onTap: () {
-                                      navigateToOneRecordScreen(
-                                        childScreen: OneRecordScreen(
-                                          isNewExpenseCategory: false,
-                                          category: itemsList[index],
-                                        ),
-                                      );
-                                    },
-                                    onLongPress: () {
-                                      simpleAlertDialog(
-                                          context: context,
-                                          onPressedOk: () {
-                                            categoriesBloc.inDeleteCategory
-                                                .add(itemsList[index].id);
-                                            Navigator.pop(context);
-
-                                            // update local list
-                                            itemsList.removeAt(index);
-                                            if (itemsList.length == 0)
-                                              Navigator.of(context).pop(true);
-
-                                            snackBar(
+                                    onTap: widget.allowToEditData
+                                        ? () {
+                                            navigateToOneRecordScreen(
+                                              childScreen: OneRecordScreen(
+                                                isNewExpenseCategory: false,
+                                                category: itemsList[index],
+                                              ),
+                                            );
+                                          }
+                                        : null,
+                                    onLongPress: widget.allowToEditData
+                                        ? () {
+                                            simpleAlertDialog(
                                                 context: context,
-                                                infoMessage: "Record deleted!");
-                                          },
-                                          title: "Delete?",
-                                          contentText:
-                                              "This record will be gone forever.");
-                                    },
+                                                onPressedOk: () {
+                                                  categoriesBloc
+                                                      .inDeleteCategory
+                                                      .add(itemsList[index].id);
+                                                  Navigator.pop(context);
+
+                                                  // update local list
+                                                  itemsList.removeAt(index);
+                                                  if (itemsList.length == 0)
+                                                    Navigator.of(context)
+                                                        .pop(true);
+
+                                                  snackBar(
+                                                      context: context,
+                                                      infoMessage:
+                                                          "Record deleted!");
+                                                },
+                                                title: "Delete?",
+                                                contentText:
+                                                    "This record will be gone forever.");
+                                          }
+                                        : null,
                                     child: Padding(
                                       padding:
                                           EdgeInsets.symmetric(vertical: 20),
@@ -242,22 +252,23 @@ class DetailsScreenState extends State<DetailsScreen> {
                                 ),
                               );
                             }),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: newItemListTile(
-                            text: "Add expense",
-                            color: Theme.of(context).accentColor,
-                            onPressed: () {
-                              navigateToOneRecordScreen(
-                                childScreen: OneRecordScreen(
-                                  expenseList: expenseList,
-                                  expenseCategoryTitle: categoryTitle,
-                                  isNewExpenseCategory: false,
-                                ),
-                              );
-                            },
-                          ),
-                        )
+                        if (widget.allowToEditData)
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: newItemListTile(
+                              text: "Add expense",
+                              color: Theme.of(context).accentColor,
+                              onPressed: () {
+                                navigateToOneRecordScreen(
+                                  childScreen: OneRecordScreen(
+                                    expenseList: expenseList,
+                                    expenseCategoryTitle: categoryTitle,
+                                    isNewExpenseCategory: false,
+                                  ),
+                                );
+                              },
+                            ),
+                          )
                       ],
                     ),
                   ),

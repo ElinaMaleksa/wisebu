@@ -30,7 +30,11 @@ Widget yellowButton(
       child: FittedBox(
         child: Text(
           text,
-          style: TextStyle(color: Colors.white, fontSize: 20),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: isLarge ? FontWeight.bold : null,
+          ),
         ),
       ),
       onPressed: onPressed,
@@ -125,7 +129,7 @@ Future<dynamic> alertDialogWithFields(
                       controller: dialogTitleController,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                            RegExp("[a-zA-Z0-9 ]"))
+                            RegExp("[a-zA-Z0-9 .,?!]")),
                       ],
                       decoration: InputDecoration(
                         hintText: hintText ?? "",
@@ -248,12 +252,18 @@ String amountTextShown({@required double amount}) {
 Widget inkwellIcon(
         {@required String tooltip,
         @required IconData iconData,
-        @required onTap}) =>
+        @required onTap,
+        Color color}) =>
+// if color == null it is appBar icon
     Tooltip(
         message: tooltip,
         child: InkWell(
             customBorder: CircleBorder(),
             child: Padding(
-                padding: EdgeInsets.all(15),
-                child: Icon(iconData, color: Colors.white)),
+                padding: EdgeInsets.all(color == null ? 15 : 0),
+                child: Icon(
+                  iconData,
+                  color: color ?? Colors.white,
+                  size: color == null ? 25 : 35,
+                )),
             onTap: onTap));
