@@ -1,11 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:wisebu/data/Category.dart';
-import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/blocs/BlocProvider.dart';
 import 'package:wisebu/data/blocs/CategoriesBloc.dart';
-import 'package:wisebu/screens/MainScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
 class OneRecordScreen extends StatefulWidget {
@@ -106,6 +105,11 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             : "Category title"),
                     if (widget.isNewExpenseCategory || category != null)
                       TextField(
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp("[a-zA-Z0-9 ]"))
+                        ],
+                        enabled: category == null ? true : false,
                         controller: titleController,
                         keyboardType: TextInputType.text,
                         textCapitalization: TextCapitalization.sentences,
@@ -142,6 +146,10 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                       children: [
                         titleText(title: "Description"),
                         TextField(
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp("[a-zA-Z0-9 ]"))
+                          ],
                           textCapitalization: TextCapitalization.sentences,
                           controller: descriptionController,
                           keyboardType: TextInputType.text,
@@ -220,46 +228,32 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                                   description: descriptionController.text,
                                 );
 
-                                DatabaseHelper.db.newCategory(category);
+                                categoriesBloc.handleAddNewCategory(category);
                                 Navigator.of(context).pop(true);
-                                /* DatabaseHelper.db
-                                    .dbInsertRecord(category)
-                                    .then((_) {
-                                  pushReplacement(
+                                snackBar(
                                     context: context,
-                                    nextScreen: MainScreen(
-                                      showSnackBar: true,
-                                      snackBarMessage: "Record saved!",
-                                      dateTimeMonth: dateTime.toString(),
-                                    ),
-                                  );
-                                });*/
+                                    infoMessage: "Record saved!");
                               }
                             } else {
-                              DatabaseHelper.db
-                                  .dbUpdateRecord(
-                                index: category.id,
+                              categoriesBloc.handleUpdateCategory(Category(
+                                id: category.id,
                                 title: titleController.text.length == 0
                                     ? "Expense"
                                     : titleController.text,
                                 amount: double.parse(amountController.text),
                                 description: descriptionController.text ?? "",
                                 date: dateTime.toString(),
-                              )
-                                  .then((_) {
-                                pushReplacement(
+                                type: category.type,
+                              ));
+
+                              Navigator.of(context).pop(true);
+                              snackBar(
                                   context: context,
-                                  nextScreen: MainScreen(
-                                    showSnackBar: true,
-                                    snackBarMessage: "Record updated!",
-                                    dateTimeMonth: dateTime.toString(),
-                                  ),
-                                );
-                              });
+                                  infoMessage: "Record updated!");
                             }
                           },
                           text: "Save"),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -276,8 +270,6 @@ class OneRecordScreenState extends State<OneRecordScreen> {
   }
 
   Widget datePicker({@required BuildContext context}) {
-    DateTime lastDate = DateTime.now().add(Duration(days: 365));
-    DateTime firstDate = DateTime.now().subtract(Duration(days: 365));
     return OutlineButton(
       onPressed: () {
         hideKeyboard(context);
@@ -285,15 +277,13 @@ class OneRecordScreenState extends State<OneRecordScreen> {
           showDatePicker(
             context: context,
             initialDate: dateTime,
-            firstDate: firstDate,
-            lastDate: lastDate,
+            firstDate: firstDate.add(Duration(days: 1)),
+            lastDate: lastDate.subtract(Duration(days: 1)),
           ).then((pickedDate) {
             if (pickedDate != null &&
                 pickedDate.isAfter(firstDate) &&
                 pickedDate.isBefore(lastDate)) {
-              setState(() {
-                dateTime = pickedDate;
-              });
+              dateTime = pickedDate;
             }
           });
         else

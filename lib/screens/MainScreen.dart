@@ -1,11 +1,9 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
-import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/data/blocs/BlocProvider.dart';
 import 'package:wisebu/data/blocs/CategoriesBloc.dart';
 import 'package:wisebu/screens/DetailsScreen.dart';
@@ -13,16 +11,10 @@ import 'package:wisebu/screens/OneRecordScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
 class MainScreen extends StatefulWidget {
-  final bool showSnackBar;
-  final String snackBarMessage;
-  final String dateTimeMonth;
   final List<Category> incomesSetUpList;
   final List<Category> expensesSetUpList;
 
   MainScreen({
-    this.showSnackBar,
-    this.snackBarMessage,
-    this.dateTimeMonth,
     this.incomesSetUpList,
     this.expensesSetUpList,
   });
@@ -36,12 +28,14 @@ class MainScreenState extends State<MainScreen> {
 
   PageController pageController = PageController(initialPage: 999);
   bool showDateForward = true;
+  bool allowToAddNewData;
   DateTime dateTimeShowed;
 
   double totalIncomes = 0;
   double totalExpenses = 0;
   List<Category> incomeList = [];
   List<Category> expenseList = [];
+  List<Category> groupedExpenses = [];
 
   @override
   void initState() {
@@ -57,17 +51,8 @@ class MainScreenState extends State<MainScreen> {
         categoriesBloc.inAddCategory.add(category);
 
     // set header date
-    if (widget.dateTimeMonth != null)
-      dateTimeShowed = DateTime.parse(widget.dateTimeMonth);
-    else
-      dateTimeShowed = DateTime.now();
-
-    // TODO: update this snackBar feature
-    if (widget.showSnackBar != null && widget.showSnackBar)
-      // set delay to get context
-      Future.delayed(Duration.zero, () {
-        snackBar(context: context, infoMessage: widget.snackBarMessage);
-      });
+    dateTimeShowed = DateTime.now();
+    allowToAddNewData = true;
   }
 
   @override
@@ -86,7 +71,7 @@ class MainScreenState extends State<MainScreen> {
       ),
     );
 
-    // If update was set, get all the categories again
+    // if update was set, get all the categories again
     if (update != null) {
       categoriesBloc.getCategories();
     }
@@ -127,11 +112,12 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  setData(List<Category> fullCategoryList) {
+  setData(List<Category> fullCategoryList) async {
     totalIncomes = 0;
     totalExpenses = 0;
     incomeList.clear();
     expenseList.clear();
+    groupedExpenses.clear();
 
     for (var i in fullCategoryList)
       if (dateWithZeroTime(DateTime.parse(i.date)).toString().substring(0, 7) ==
@@ -144,8 +130,37 @@ class MainScreenState extends State<MainScreen> {
           expenseList.add(i);
         }
       }
+
+    // group expenses by title and sum amount
+    for (var i in expenseList) groupExpensesByTitle(i);
+
     incomeList.sort((a, b) => a.title.compareTo(b.title));
     expenseList.sort((a, b) => a.title.compareTo(b.title));
+
+    allowToAddNewData =
+        dateTimeShowed.isAfter(firstDate) && dateTimeShowed.isBefore(lastDate);
+  }
+
+  // group expenses by title and sum amount
+  void groupExpensesByTitle(Category category) {
+    double totalAmount = 0;
+    for (var i in expenseList)
+      if (i.title == category.title) totalAmount += i.amount;
+
+    int index = groupedExpenses.indexWhere((i) {
+      return i.title == category.title &&
+          i.date.substring(0, 7) == category.date.substring(0, 7);
+    });
+
+    if (index < 0)
+      groupedExpenses.add(
+        Category(
+          title: category.title,
+          type: category.type,
+          date: category.date,
+          amount: totalAmount,
+        ),
+      );
   }
 
   Widget content(BuildContext context) {
@@ -155,12 +170,7 @@ class MainScreenState extends State<MainScreen> {
         builder:
             (BuildContext context, AsyncSnapshot<List<Category>> snapshot) {
           if (snapshot.hasData) {
-            if (snapshot.data.length == 0) {
-              return Text('No categories');
-            }
-
-            List<Category> categories = snapshot.data;
-            setData(categories);
+            setData(snapshot.data);
 
             return PageView.builder(
                 physics: NeverScrollableScrollPhysics(),
@@ -236,7 +246,7 @@ class MainScreenState extends State<MainScreen> {
                           categoryData(
                               context: context,
                               type: expenseType,
-                              dataList: expenseList,
+                              dataList: groupedExpenses,
                               typeColor: Theme.of(context).accentColor),
                           if (incomeList.isEmpty && expenseList.isEmpty)
                             Container(
@@ -271,29 +281,6 @@ class MainScreenState extends State<MainScreen> {
                             ),
                         ],
                       ),
-                      /* ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: snapshot.data.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      Category category = categories[index];
-
-                      return GestureDetector(
-                        onTap: () {
-                          // TODO: go to details screen
-                          // TODO: put navigateToCategory method in DetailsScreen onTap
-                          navigateToCategory(category);
-                        },
-                        child: Container(
-                          height: 50,
-                          child: Text(
-                            'Category ' + category.id.toString() + category.title,
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                      );
-                    },
-                  ),*/
                     ],
                   );
                 });
@@ -404,64 +391,71 @@ class MainScreenState extends State<MainScreen> {
                       fontWeight: FontWeight.bold),
                 ),
               ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.15,
-                child: IconButton(
-                  visualDensity: VisualDensity(horizontal: -4),
-                  onPressed: () {
-                    if (type == incomeType) {
-                      dialogTitleController.clear();
-                      dialogAmountController.clear();
+              Container(
+                height: 50,
+                width: 50,
+                child: allowToAddNewData
+                    ? IconButton(
+                        visualDensity: VisualDensity(horizontal: -4),
+                        onPressed: () {
+                          if (type == incomeType) {
+                            dialogTitleController.clear();
+                            dialogAmountController.clear();
 
-                      alertDialogWithFields(
-                        context: context,
-                        title: type == expenseType
-                            ? expenseDialogTitle
-                            : incomeDialogTitle,
-                        hintText:
-                            type == expenseType ? expenseType : incomeType,
-                        onPressedOk: () {
-                          hideKeyboard(context);
+                            alertDialogWithFields(
+                              context: context,
+                              title: type == expenseType
+                                  ? expenseDialogTitle
+                                  : incomeDialogTitle,
+                              hintText: type == expenseType
+                                  ? expenseType
+                                  : incomeType,
+                              onPressedOk: () {
+                                hideKeyboard(context);
 
-                          bool alreadyExists = doExist(
-                              title: titleFromDialog(type),
-                              type: type,
-                              itemsList: dataList);
+                                bool alreadyExists = doExist(
+                                    title: titleFromDialog(type),
+                                    type: type,
+                                    itemsList: dataList);
 
-                          if (alreadyExists) {
-                            Navigator.pop(context);
-                            simpleAlertDialog(
-                                context: context,
-                                onPressedOk: () => Navigator.pop(context),
-                                title: "Sorry",
-                                contentText: "Category already exists.");
-                          } else {
-                            Category category = Category(
-                              title: titleFromDialog(type),
-                              type: type,
-                              amount: amountFromDialog(),
-                              date: dateWithZeroTime(dateTimeShowed).toString(),
+                                if (alreadyExists) {
+                                  Navigator.pop(context);
+                                  simpleAlertDialog(
+                                      context: context,
+                                      onPressedOk: () => Navigator.pop(context),
+                                      title: "Sorry",
+                                      contentText: "Category already exists.");
+                                } else {
+                                  categoriesBloc.inAddCategory.add(Category(
+                                    title: titleFromDialog(type),
+                                    type: type,
+                                    amount: amountFromDialog(),
+                                    date: dateWithZeroTime(dateTimeShowed)
+                                        .toString(),
+                                  ));
+                                  Navigator.of(context).pop();
+                                }
+                              },
                             );
-
-                            categoriesBloc.inAddCategory.add(category);
-                            Navigator.of(context).pop();
-                          }
+                          } else
+                            // go to add record screen to add new expense
+                            pushToOneCategoryScreen(
+                              OneRecordScreen(
+                                isNewExpenseCategory: true,
+                                date: dateTimeShowed.year ==
+                                            DateTime.now().year &&
+                                        dateTimeShowed.month ==
+                                            DateTime.now().month
+                                    ? DateTime.now().toString()
+                                    : dateWithZeroTime(dateTimeShowed)
+                                        .toString(),
+                              ),
+                            );
                         },
-                      );
-                    } else
-                      // go to add record screen to add new expense
-                      pushToOneCategoryScreen(
-                        OneRecordScreen(
-                          isNewExpenseCategory: true,
-                          date: dateTimeShowed.year == DateTime.now().year &&
-                                  dateTimeShowed.month == DateTime.now().month
-                              ? DateTime.now().toString()
-                              : dateWithZeroTime(dateTimeShowed).toString(),
-                        ),
-                      );
-                  },
-                  icon: Icon(Icons.add_circle, size: 35, color: typeColor),
-                ),
+                        icon:
+                            Icon(Icons.add_circle, size: 35, color: typeColor),
+                      )
+                    : Container(),
               ),
             ],
           ),
@@ -509,15 +503,17 @@ class MainScreenState extends State<MainScreen> {
                         hintText: "Income",
                         onPressedOk: () {
                           // update income record
-                          DatabaseHelper.db.updateCategory(Category(
-                            id: dataList[index].id,
-                            title: dialogTitleController.text ?? "Income",
-                            amount: amountFromDialog(),
-                            date: dataList[index].date,
-                            type: dataList[index].type,
-                          ));
+                          categoriesBloc.handleUpdateCategory(
+                            Category(
+                              id: dataList[index].id,
+                              title: dialogTitleController.text ?? "Income",
+                              amount: amountFromDialog(),
+                              date: dataList[index].date,
+                              type: dataList[index].type,
+                            ),
+                          );
+
                           // get data from db
-                          categoriesBloc.getCategories();
                           Navigator.pop(context);
                         },
                       );
@@ -530,10 +526,15 @@ class MainScreenState extends State<MainScreen> {
                       contentText:
                           "\"${dataList[index].title}\" category and it\'s records will be removed forever.",
                       onPressedOk: () {
-                        // update income record
-                        DatabaseHelper.db.deleteCategory(dataList[index].id);
-                        // get data from db
-                        categoriesBloc.getCategories();
+                        // delete income record
+                        if (dataList[index].type == incomeType)
+                          categoriesBloc
+                              .handleDeleteOneRecord(dataList[index].id);
+                        else // delete all grouped expense records in current month
+                          categoriesBloc.handleDeleteExpenseRecords(
+                              title: dataList[index].title,
+                              type: dataList[index].type,
+                              date: dataList[index].date);
                         Navigator.pop(context);
                       },
                     );
@@ -551,6 +552,7 @@ class MainScreenState extends State<MainScreen> {
         builder: (context) => BlocProvider(
           bloc: CategoriesBloc(),
           child: DetailsScreen(
+            expenseList: expenseList,
             title: category.title,
             dateTimeMonth: category.date,
           ),

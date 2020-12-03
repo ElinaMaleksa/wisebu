@@ -41,7 +41,7 @@ class OpenScreen extends StatelessWidget {
                     child: Text(
                       'Classify your expenses to spend wisely.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 21),
+                      style: TextStyle(fontSize: 25),
                     ))),
             Container(
               margin: EdgeInsets.only(

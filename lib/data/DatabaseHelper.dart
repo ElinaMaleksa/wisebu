@@ -20,7 +20,7 @@ class DatabaseHelper {
   final columnAmount = "amount";
   final columnDescription = "description";
 
-  // Create a singleton
+  // create a singleton
   DatabaseHelper._();
 
   static final DatabaseHelper db = DatabaseHelper._();
@@ -69,30 +69,19 @@ class DatabaseHelper {
           "ALTER TABLE $tableCategories ADD COLUMN $columnDescription TEXT");
   }
 
-  getGroupedCategories() async {
+  getCategories() async {
     final db = await database;
-    var res = await db.rawQuery(
-        "SELECT $columnId, $columnTitle, $columnType, $columnDate, $columnDescription,"
-        "SUM($columnAmount) AS $columnAmount "
-        "FROM $tableCategories "
-        "GROUP BY $columnTitle");
+    var res = await db.query(tableCategories);
     List<Category> categories =
         res.isNotEmpty ? res.map((c) => Category.fromMap(c)).toList() : [];
 
     return categories;
   }
 
-  getCategory(int id) async {
-    final db = await database;
-    var res = await db.query(tableCategories, where: 'id = ?', whereArgs: [id]);
-
-    return res.isNotEmpty ? Category.fromMap(res.first) : null;
-  }
-
   updateCategory(Category category) async {
     final db = await database;
     var res = await db.update(tableCategories, category.toMap(),
-        where: 'id = ?', whereArgs: [category.id]);
+        where: '$columnId = ?', whereArgs: [category.id]);
 
     return res;
   }
@@ -100,7 +89,7 @@ class DatabaseHelper {
   deleteCategory(int id) async {
     final db = await database;
 
-    db.delete(tableCategories, where: 'id = ?', whereArgs: [id]);
+    db.delete(tableCategories, where: '$columnId = ?', whereArgs: [id]);
   }
 
   newCategory(Category category) async {
@@ -110,118 +99,19 @@ class DatabaseHelper {
     return res;
   }
 
-// query for  MainScreen
-  Future<List<Category>> dbGetRecordsByType(String type, String date) async {
-    // Get a reference to the database
-    final db = await database;
-
-    final List<Map<String, dynamic>> maps = await db
-        .rawQuery("SELECT $columnId, $columnTitle, $columnType, $columnDate, "
-            "SUM($columnAmount) AS $columnAmount "
-            "FROM $tableCategories "
-            "WHERE $columnType = \"$type\" "
-            "AND $columnDate LIKE \"${date.substring(0, 7)}%\" "
-            "GROUP BY $columnTitle");
-
-    // Convert the List<Map<String, dynamic> into a List<Category>
-    return List.generate(maps.length, (i) {
-      return Category(
-          id: maps[i]['$columnId'],
-          title: maps[i]['$columnTitle'],
-          type: maps[i]['$columnType'],
-          date: maps[i]['$columnDate'],
-          amount: maps[i]['$columnAmount'],
-          description: maps[i]['$columnDescription']);
-    });
-  }
-
-// query for DetailsScreen
-  Future<List<Category>> dbGetRecordsByTitle(String title, String date) async {
-    final db = await database;
-
-    final List<Map<String, dynamic>> maps =
-        await db.rawQuery("SELECT * FROM $tableCategories "
-            "WHERE $columnTitle = \"$title\" "
-            "AND $columnDate LIKE \"${date.substring(0, 7)}%\" "
-            "ORDER BY $columnDate DESC");
-
-    return List.generate(maps.length, (i) {
-      return Category(
-        id: maps[i]['$columnId'],
-        title: maps[i]['$columnTitle'],
-        type: maps[i]['$columnType'],
-        date: maps[i]['$columnDate'],
-        amount: maps[i]['$columnAmount'],
-        description: maps[i]['$columnDescription'],
-      );
-    });
-  }
-
-  Future<void> dbUpdateRecord(
-      {@required int index,
-      @required String title,
-      @required double amount,
-      @required String date,
-      String description}) async {
-    final db = await database;
-
-    String whereStatement = '$columnId = ?';
-    List<String> whereArgument = ['$index'];
-
-    Map<String, dynamic> record = {
-      columnTitle: title,
-      columnAmount: amount,
-      columnDescription: description ?? "",
-      columnDate: date,
-    };
-
-    await db.update(
-      "$tableCategories",
-      record,
-      where: whereStatement,
-      whereArgs: whereArgument,
-    );
-  }
-
-  Future<void> dbDeleteCategory(
+  // delete for all records in month with the same title
+  // meant for EXPENSE delete from MainScreen
+  Future<void> dbDeleteExpense(
       {@required String title,
       @required String type,
       @required String date}) async {
     final db = await database;
 
-    await db.delete(
+    db.delete(
       '$tableCategories',
       where: "$columnTitle = ? AND $columnType = ? "
           "AND $columnDate LIKE \"${date.substring(0, 7)}%\" ",
       whereArgs: [title, type],
-    );
-  }
-
-  Future<void> dbDeleteRecord({@required int id}) async {
-    final db = await database;
-
-    await db.delete(
-      '$tableCategories',
-      where: "$columnId = ?",
-      whereArgs: [id],
-    );
-  }
-
-  Future<void> dbInsertRecord(Category category) async {
-    final db = await database;
-
-    Map<String, dynamic> record = {
-      '$columnTitle': category.title,
-      '$columnType': category.type,
-      '$columnDate': category.date,
-      '$columnAmount': category.amount,
-      '$columnDescription': category.description ?? ""
-    };
-
-    await db.insert(
-      '$tableCategories',
-      record,
-      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 }

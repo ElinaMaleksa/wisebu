@@ -9,6 +9,9 @@ TextEditingController dialogAmountController = TextEditingController();
 FilteringTextInputFormatter amountInputFormatter =
     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'));
 
+DateTime lastDate = DateTime.now().add(Duration(days: 365));
+DateTime firstDate = DateTime.now().subtract(Duration(days: 365));
+
 Widget yellowButton(
     {@required BuildContext context,
     @required onPressed,
@@ -120,6 +123,10 @@ Future<dynamic> alertDialogWithFields(
                       autocorrect: false,
                       textCapitalization: TextCapitalization.sentences,
                       controller: dialogTitleController,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp("[a-zA-Z0-9 ]"))
+                      ],
                       decoration: InputDecoration(
                         hintText: hintText ?? "",
                       ),

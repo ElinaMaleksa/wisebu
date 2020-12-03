@@ -10,15 +10,23 @@ import 'package:wisebu/widgets/Widgets.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String title;
+
+  // full expenses list for OneRecordScreen
+  final List<Category> expenseList;
   final String dateTimeMonth;
 
-  DetailsScreen({@required this.title, @required this.dateTimeMonth});
+  DetailsScreen(
+      {@required this.title,
+      @required this.expenseList,
+      @required this.dateTimeMonth});
 
   @override
   State<StatefulWidget> createState() => DetailsScreenState();
 }
 
 class DetailsScreenState extends State<DetailsScreen> {
+  // full expenses list for OneRecordScreen
+  List<Category> expenseList = [];
   List<Category> itemsList = [];
   double total = 0;
   String categoryTitle;
@@ -28,16 +36,19 @@ class DetailsScreenState extends State<DetailsScreen> {
   @override
   void initState() {
     categoriesBloc = BlocProvider.of<CategoriesBloc>(context);
+    expenseList = widget.expenseList;
     categoryTitle = widget.title;
     super.initState();
   }
 
-  setData(List<Category> fullCategoryList) {
+  setData(List<Category> fullCategoryList) async {
     total = 0;
     itemsList.clear();
     if (fullCategoryList.isNotEmpty)
       for (var i in fullCategoryList)
-        if (i.type == expenseType && i.date == widget.dateTimeMonth) {
+        if (i.type == expenseType &&
+            i.date.substring(0, 7) == widget.dateTimeMonth.substring(0, 7) &&
+            i.title == widget.title) {
           total = total + i.amount;
           itemsList.add(i);
         }
@@ -68,31 +79,25 @@ class DetailsScreenState extends State<DetailsScreen> {
                   hintText: "Category title",
                   enabled: false,
                   onPressedOk: () async {
-                    /*if (dialogTitleController.text != categoryTitle &&
+                    if (dialogTitleController.text != categoryTitle &&
                         dialogTitleController.text.isNotEmpty) {
                       // update record titles in db to new title
                       for (var i in itemsList)
-                        await DatabaseHelper.db.dbUpdateRecord(
-                          index: i.id,
+                        categoriesBloc.handleUpdateCategory(Category(
+                          id: i.id,
                           title: dialogTitleController.text ?? categoryTitle,
                           amount: i.amount,
                           description: i.description,
                           date: i.date,
-                        );
-
-                      setState(() {
-                        // update titles in expenseList to "Add expense" work properly
-                        for (var i in expenseList)
-                          if (i.title == categoryTitle)
-                            i.title = dialogTitleController.text;
-
-                        // update category title
-                        categoryTitle =
-                            dialogTitleController.text ?? categoryTitle;
-                      });
-                      resetData();
+                          type: i.type,
+                        ));
                     }
-                    Navigator.pop(context);*/
+                    Navigator.pop(context);
+                    // go to MainScreen
+                    Navigator.of(context).pop(true);
+                    snackBar(
+                        context: context,
+                        infoMessage: "Category title updated!");
                   },
                 );
               },
@@ -100,17 +105,10 @@ class DetailsScreenState extends State<DetailsScreen> {
           ],
         ),
         body: StreamBuilder<List<Category>>(
-          // TODO: get all category records from db, not group of them
           stream: categoriesBloc.categories,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              if (snapshot.data.length == 0) {
-                return Text('No categories');
-              }
-
-              List<Category> categories = snapshot.data;
-              setData(categories);
-
+              setData(snapshot.data);
               return Column(
                 children: [
                   Arc(
@@ -170,27 +168,33 @@ class DetailsScreenState extends State<DetailsScreen> {
                                   ),
                                   child: InkWell(
                                     onTap: () {
-                                      push(
-                                        context: context,
-                                        nextScreen: OneRecordScreen(
+                                      navigateToOneRecordScreen(
+                                        childScreen: OneRecordScreen(
                                           isNewExpenseCategory: false,
                                           category: itemsList[index],
                                         ),
                                       );
                                     },
                                     onLongPress: () {
-                                      /* simpleAlertDialog(
-                                      context: context,
-                                      onPressedOk: () {
-                                        DatabaseHelper.db.dbDeleteRecord(id: itemsList[index].id)
-                                            .then((_) {
-                                          resetData();
-                                          Navigator.pop(context);
-                                        });
-                                      },
-                                      title: "Delete?",
-                                      contentText:
-                                          "This record will be gone forever.");*/
+                                      simpleAlertDialog(
+                                          context: context,
+                                          onPressedOk: () {
+                                            categoriesBloc.inDeleteCategory
+                                                .add(itemsList[index].id);
+                                            Navigator.pop(context);
+
+                                            // update local list
+                                            itemsList.removeAt(index);
+                                            if (itemsList.length == 0)
+                                              Navigator.of(context).pop(true);
+
+                                            snackBar(
+                                                context: context,
+                                                infoMessage: "Record deleted!");
+                                          },
+                                          title: "Delete?",
+                                          contentText:
+                                              "This record will be gone forever.");
                                     },
                                     child: Padding(
                                       padding:
@@ -244,14 +248,11 @@ class DetailsScreenState extends State<DetailsScreen> {
                             text: "Add expense",
                             color: Theme.of(context).accentColor,
                             onPressed: () {
-                              push(
-                                context: context,
-                                nextScreen: BlocProvider(
-                                  bloc: CategoriesBloc(),
-                                  child: OneRecordScreen(
-                                    expenseCategoryTitle: categoryTitle,
-                                    isNewExpenseCategory: false,
-                                  ),
+                              navigateToOneRecordScreen(
+                                childScreen: OneRecordScreen(
+                                  expenseList: expenseList,
+                                  expenseCategoryTitle: categoryTitle,
+                                  isNewExpenseCategory: false,
                                 ),
                               );
                             },
@@ -271,5 +272,21 @@ class DetailsScreenState extends State<DetailsScreen> {
         ),
       ),
     );
+  }
+
+  void navigateToOneRecordScreen({@required Widget childScreen}) async {
+    bool update = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          bloc: CategoriesBloc(),
+          child: childScreen,
+        ),
+      ),
+    );
+
+    // if update was set, get all the categories again
+    if (update != null) {
+      categoriesBloc.getCategories();
+    }
   }
 }
