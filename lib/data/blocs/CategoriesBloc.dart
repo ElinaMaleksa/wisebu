@@ -6,35 +6,27 @@ import 'package:wisebu/data/DatabaseHelper.dart';
 import 'package:wisebu/data/blocs/BlocProvider.dart';
 
 class CategoriesBloc implements BlocBase {
-  // read and group categories by title from db
+  // read all categories from db
   final categoriesController = StreamController<List<Category>>.broadcast();
 
   StreamSink<List<Category>> get inCategories => categoriesController.sink;
 
   Stream<List<Category>> get categories => categoriesController.stream;
 
-  // adding new category
+  // add new category
   final addCategoryController = StreamController<Category>.broadcast();
 
   StreamSink<Category> get inAddCategory => addCategoryController.sink;
 
-  // saving category
+  // save category
   final updateCategoryController = StreamController<Category>.broadcast();
 
   StreamSink<Category> get inUpdateCategory => updateCategoryController.sink;
 
-  // deleting category
+  // delete category
   final deleteCategoryController = StreamController<int>.broadcast();
 
   StreamSink<int> get inDeleteCategory => deleteCategoryController.sink;
-
-  // This bool StreamController will be used to ensure we don't do anything
-  // else until a category is actually deleted from the database
-  final categoryDeletedController = StreamController<bool>.broadcast();
-
-  StreamSink<bool> get inDeleted => categoryDeletedController.sink;
-
-  Stream<bool> get deleted => categoryDeletedController.stream;
 
   CategoriesBloc() {
     getCategories();
@@ -49,7 +41,6 @@ class CategoriesBloc implements BlocBase {
     addCategoryController.close();
     updateCategoryController.close();
     deleteCategoryController.close();
-    categoryDeletedController.close();
   }
 
   void getCategories() async {
@@ -69,7 +60,6 @@ class CategoriesBloc implements BlocBase {
 
   void handleDeleteOneRecord(int id) async {
     await DatabaseHelper.db.deleteCategory(id);
-    inDeleted.add(true);
     getCategories();
   }
 

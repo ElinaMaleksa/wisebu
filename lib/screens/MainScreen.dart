@@ -164,6 +164,8 @@ class MainScreenState extends State<MainScreen> {
           amount: totalAmount,
         ),
       );
+    // sort list by title
+    groupedExpenses.sort((a, b) => a.title.compareTo(b.title));
   }
 
   Widget bodyContent(BuildContext context) {
@@ -422,7 +424,7 @@ class MainScreenState extends State<MainScreen> {
                           hintText: "Income",
                           onPressedOk: () {
                             // update income record
-                            categoriesBloc.handleUpdateCategory(
+                            categoriesBloc.inUpdateCategory.add(
                               Category(
                                 id: dataList[index].id,
                                 title: dialogTitleController.text ?? "Income",
@@ -448,8 +450,8 @@ class MainScreenState extends State<MainScreen> {
                       onPressedOk: () {
                         // delete income record
                         if (dataList[index].type == incomeType)
-                          categoriesBloc
-                              .handleDeleteOneRecord(dataList[index].id);
+                          categoriesBloc.inDeleteCategory
+                              .add(dataList[index].id);
                         else // delete all grouped expense records in current month
                           categoriesBloc.handleDeleteExpenseRecords(
                               title: dataList[index].title,
@@ -561,6 +563,7 @@ class MainScreenState extends State<MainScreen> {
     return Stack(
       children: <Widget>[
         Arc(
+          arcType: type == expenseType ? ArcType.CONVEX : ArcType.CONVEY,
           height: 15,
           child: Container(
             color: typeColor,
@@ -568,6 +571,7 @@ class MainScreenState extends State<MainScreen> {
           ),
         ),
         Arc(
+          arcType: type == expenseType ? ArcType.CONVEX : ArcType.CONVEY,
           height: 15,
           child: Container(
             color: Theme.of(context).scaffoldBackgroundColor,

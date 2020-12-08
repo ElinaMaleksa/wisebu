@@ -2,8 +2,6 @@ import 'package:clippy_flutter/arc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Data.dart';
-import 'package:wisebu/data/blocs/BlocProvider.dart';
-import 'package:wisebu/data/blocs/CategoriesBloc.dart';
 import 'package:wisebu/screens/SetupScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
 
@@ -41,7 +39,7 @@ class OpenScreen extends StatelessWidget {
                     child: Text(
                       'Classify your expenses to spend wisely',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 25),
+                      style: TextStyle(fontSize: 23),
                     ))),
             Container(
               margin: EdgeInsets.only(

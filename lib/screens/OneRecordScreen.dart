@@ -50,6 +50,8 @@ class OneRecordScreenState extends State<OneRecordScreen> {
       widget.expenseList.forEach((item) {
         categoryTitles.add(item.title);
       });
+      // allow dropdown to contain only unique values
+      categoryTitles = categoryTitles.toSet().toList();
     }
 
     if (widget.category != null) {
@@ -106,10 +108,15 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                     if (widget.isNewExpenseCategory || category != null)
                       TextField(
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp("[a-zA-Z0-9 ,.!?]")),
+                          FilteringTextInputFormatter.allow(RegExp(
+                              "[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEFa-zA-Z0-9 ,.!?]")),
                         ],
                         enabled: category == null ? true : false,
+                        style: TextStyle(
+                          color:
+                              category == null ? Colors.black : Colors.black45,
+                          fontWeight: category == null ? null : FontWeight.bold,
+                        ),
                         controller: titleController,
                         keyboardType: TextInputType.text,
                         textCapitalization: TextCapitalization.sentences,
@@ -147,8 +154,8 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                         titleText(title: "Description"),
                         TextField(
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp("[a-zA-Z0-9 .?!,]")),
+                            FilteringTextInputFormatter.allow(RegExp(
+                                "[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEFa-zA-Z0-9 .?!,]")),
                           ],
                           textCapitalization: TextCapitalization.sentences,
                           controller: descriptionController,
@@ -233,32 +240,48 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                               if (category == null) {
                                 Category category = Category(
                                   title: widget.isNewExpenseCategory
-                                      ? titleController.text.length == 0
+                                      ? titleController.text
+                                                  .trimRight()
+                                                  .trimLeft()
+                                                  .length ==
+                                              0
                                           ? "Expense"
                                           : titleController.text
+                                              .trimRight()
+                                              .trimLeft()
                                       : dropdownValue,
                                   type: expenseType,
                                   date: dateTime.toString(),
                                   amount: double.parse(amountController.text),
-                                  description: descriptionController.text,
+                                  description: descriptionController.text
+                                      .trimRight()
+                                      .trimLeft(),
                                 );
 
-                                categoriesBloc.handleAddNewCategory(category);
+                                categoriesBloc.inAddCategory.add(category);
                                 Navigator.of(context).pop(true);
                                 snackBar(
                                     context: context,
                                     infoMessage: "Record saved!");
                               } else {
                                 categoriesBloc.handleUpdateCategory(Category(
-                                  id: category.id,
-                                  title: titleController.text.length == 0
-                                      ? "Expense"
-                                      : titleController.text,
-                                  amount: double.parse(amountController.text),
-                                  description: descriptionController.text ?? "",
-                                  date: dateTime.toString(),
-                                  type: category.type,
-                                ));
+                                    id: category.id,
+                                    title: titleController.text
+                                                .trimRight()
+                                                .trimLeft()
+                                                .length ==
+                                            0
+                                        ? "Expense"
+                                        : titleController.text
+                                            .trimRight()
+                                            .trimLeft(),
+                                    amount: double.parse(amountController.text),
+                                    description: descriptionController.text
+                                            .trimRight()
+                                            .trimLeft() ??
+                                        "",
+                                    date: dateTime.toString(),
+                                    type: category.type));
 
                                 Navigator.of(context).pop(true);
                                 snackBar(

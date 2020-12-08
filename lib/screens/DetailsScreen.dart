@@ -54,6 +54,8 @@ class DetailsScreenState extends State<DetailsScreen> {
           total = total + i.amount;
           itemsList.add(i);
         }
+    // sort list by date
+    itemsList.sort((a, b) => a.date.compareTo(b.date));
   }
 
   @override
@@ -137,7 +139,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                           Flexible(
                             flex: 4,
                             child: Padding(
-                              padding: EdgeInsets.all(10),
+                              padding: EdgeInsets.all(5),
                               child: circleAvatar(
                                   color: Colors.white,
                                   textColor: Theme.of(context).accentColor,
@@ -160,7 +162,6 @@ class DetailsScreenState extends State<DetailsScreen> {
                               return Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 20),
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 10),
                                   decoration: BoxDecoration(
                                     border: Border(
                                       bottom: BorderSide(
@@ -207,11 +208,11 @@ class DetailsScreenState extends State<DetailsScreen> {
                                           }
                                         : null,
                                     child: Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 20),
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 20, horizontal: 5),
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Flexible(
                                             flex: 3,
@@ -225,7 +226,9 @@ class DetailsScreenState extends State<DetailsScreen> {
                                           ),
                                           Flexible(
                                             flex: 5,
-                                            child: Align(
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 5),
                                               alignment: Alignment.centerLeft,
                                               child: Text(
                                                 itemsList[index].description ??
@@ -238,10 +241,13 @@ class DetailsScreenState extends State<DetailsScreen> {
                                           ),
                                           Flexible(
                                             flex: 2,
-                                            child: FittedBox(
-                                              child: Text(
-                                                "${amountTextShown(amount: itemsList[index].amount)} €",
-                                                maxLines: 1,
+                                            child: Align(
+                                              alignment: Alignment.centerRight,
+                                              child: FittedBox(
+                                                child: Text(
+                                                  "${amountTextShown(amount: itemsList[index].amount)} €",
+                                                  maxLines: 1,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -296,8 +302,6 @@ class DetailsScreenState extends State<DetailsScreen> {
     );
 
     // if update was set, get all the categories again
-    if (update != null) {
-      categoriesBloc.getCategories();
-    }
+    if (update != null) categoriesBloc.getCategories();
   }
 }
