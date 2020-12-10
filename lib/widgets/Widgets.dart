@@ -1,6 +1,7 @@
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:intl/intl.dart';
 
 TextEditingController dialogTitleController = TextEditingController();
@@ -56,8 +57,14 @@ Widget circleAvatar(
     String secondText,
     BuildContext context}) {
   return CircleAvatar(
-    radius:
-        MediaQuery.of(context).size.height * (isPortrait(context) ? 0.1 : 0.2),
+    radius: MediaQuery.of(context).size.height *
+        (isPortrait(context)
+            ? Device.get().isTablet
+                ? 0.08
+                : 0.1
+            : Device.get().isTablet
+                ? 0.1
+                : 0.2),
     backgroundColor: color,
     child: Container(
       padding: EdgeInsets.all(15),

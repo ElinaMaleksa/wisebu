@@ -26,7 +26,7 @@ class OpenScreen extends StatelessWidget {
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height * 0.65,
                 child: Padding(
-                  padding: EdgeInsets.all(10),
+                  padding: EdgeInsets.all(15),
                   child: Image.asset(
                     "lib/images/illustration.png",
                     // scale: 2,

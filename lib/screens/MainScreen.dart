@@ -2,6 +2,7 @@ import 'package:clippy_flutter/clippy_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
@@ -190,7 +191,11 @@ class MainScreenState extends State<MainScreen> {
                           if (incomeList.length > 0 || expenseList.length > 0)
                             Container(
                               height: MediaQuery.of(context).size.height *
-                                  (isPortrait(context) ? 0.22 : 0.4),
+                                  (isPortrait(context)
+                                      ? 0.22
+                                      : Device.get().isTablet
+                                          ? 0.25
+                                          : 0.4),
                               padding:
                                   EdgeInsets.only(top: 10, right: 10, left: 10),
                               child: Row(
@@ -216,13 +221,22 @@ class MainScreenState extends State<MainScreen> {
                                       ],
                                     ),
                                   ),
-                                  circleAvatar(
-                                    context: context,
-                                    color: Theme.of(context).primaryColor,
-                                    textColor: Colors.white,
-                                    mainText:
-                                        "${amountTextShown(amount: totalIncomes - totalExpenses)} €",
-                                    secondText: "left",
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        right: Device.get().isTablet
+                                            ? MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.05
+                                            : 0),
+                                    child: circleAvatar(
+                                      context: context,
+                                      color: Theme.of(context).primaryColor,
+                                      textColor: Colors.white,
+                                      mainText:
+                                          "${amountTextShown(amount: totalIncomes - totalExpenses)} €",
+                                      secondText: "left",
+                                    ),
                                   )
                                 ],
                               ),
@@ -250,7 +264,11 @@ class MainScreenState extends State<MainScreen> {
                                     width:
                                         MediaQuery.of(context).size.width * 0.7,
                                     height: MediaQuery.of(context).size.height *
-                                        (isPortrait(context) ? 0.45 : 0.7),
+                                        (isPortrait(context)
+                                            ? 0.45
+                                            : Device.get().isTablet
+                                                ? 0.5
+                                                : 0.7),
                                     child: Container(
                                       padding: EdgeInsets.only(bottom: 10),
                                       foregroundDecoration: BoxDecoration(
@@ -691,7 +709,13 @@ class MainScreenState extends State<MainScreen> {
         leading: Container(
           color: color,
           width: MediaQuery.of(context).size.width *
-              (isPortrait(context) ? 0.05 : 0.03),
+              (isPortrait(context)
+                  ? Device.get().isTablet
+                      ? 0.03
+                      : 0.05
+                  : Device.get().isTablet
+                      ? 0.015
+                      : 0.03),
         ),
       ),
     );

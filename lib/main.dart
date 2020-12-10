@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wisebu/screens/SplashScreen.dart';
 
 void main() async {
+  // initialize firebase to work properly
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
