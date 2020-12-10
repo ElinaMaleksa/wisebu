@@ -78,8 +78,9 @@ class DetailsScreenState extends State<DetailsScreen> {
                     dialogTitleController.text = categoryTitle;
                     dialogAmountController.text = total.toString();
                   });
-                  alertDialogWithFields(
+                  alertDialog(
                     context: context,
+                    haveTextFields: true,
                     title: "Edit category title",
                     hintText: "Category title",
                     enabled: false,
@@ -124,7 +125,8 @@ class DetailsScreenState extends State<DetailsScreen> {
                           right: MediaQuery.of(context).size.width * 0.05,
                           left: MediaQuery.of(context).size.width * 0.1,
                           bottom: 15),
-                      height: MediaQuery.of(context).size.height * 0.23,
+                      height: MediaQuery.of(context).size.height *
+                          (isPortrait(context) ? 0.22 : 0.3),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -184,7 +186,8 @@ class DetailsScreenState extends State<DetailsScreen> {
                                         : null,
                                     onLongPress: widget.allowToEditData
                                         ? () {
-                                            simpleAlertDialog(
+                                            alertDialog(
+                                                haveTextFields: false,
                                                 context: context,
                                                 onPressedOk: () {
                                                   categoriesBloc
@@ -204,6 +207,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                                                           "Record deleted!");
                                                 },
                                                 title: "Delete?",
+                                                okButtonName: "Delete",
                                                 contentText:
                                                     "This record will be gone forever.");
                                           }

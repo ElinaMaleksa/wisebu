@@ -46,6 +46,9 @@ Widget yellowButton(
   );
 }
 
+bool isPortrait(BuildContext context) =>
+    MediaQuery.of(context).orientation == Orientation.portrait;
+
 Widget circleAvatar(
     {@required Color color,
     @required Color textColor,
@@ -53,10 +56,11 @@ Widget circleAvatar(
     String secondText,
     BuildContext context}) {
   return CircleAvatar(
-    radius: MediaQuery.of(context).size.height * 0.1,
+    radius:
+        MediaQuery.of(context).size.height * (isPortrait(context) ? 0.1 : 0.2),
     backgroundColor: color,
     child: Container(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(15),
       alignment: Alignment.center,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -64,13 +68,15 @@ Widget circleAvatar(
         children: [
           Expanded(
             child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                mainText,
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: MediaQuery.of(context).size.height * 0.04,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  mainText,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textScaleFactor: 0.2,
                 ),
               ),
             ),
@@ -80,8 +86,8 @@ Widget circleAvatar(
               secondText,
               style: TextStyle(
                 color: textColor,
-                fontSize: MediaQuery.of(context).size.height * 0.024,
               ),
+              textScaleFactor: 1,
             ),
         ],
       ),
@@ -103,20 +109,28 @@ Widget newItemListTile(
   );
 }
 
-Future<dynamic> alertDialogWithFields(
+Future<dynamic> alertDialog(
     {@required BuildContext context,
     @required onPressedOk,
     String title,
     String hintText,
-    bool enabled}) {
+    bool enabled,
+    String contentText,
+    @required bool haveTextFields,
+    String okButtonName}) {
   return showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(20),
+            ),
+          ),
           child: SingleChildScrollView(
             child: Container(
-              width: MediaQuery.of(context).size.height * 0.7,
-              padding: EdgeInsets.only(top: 15, left: 15),
+              width: MediaQuery.of(context).size.width * 0.7,
+              padding: EdgeInsets.only(top: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -124,60 +138,115 @@ Future<dynamic> alertDialogWithFields(
                 children: [
                   FittedBox(
                     child: Container(
-                      width: MediaQuery.of(context).size.width * 0.65,
+                      padding: EdgeInsets.only(right: 30, left: 15),
                       child: Text(
-                        title,
+                        title ?? "",
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(right: 15, top: 10),
-                    child: TextField(
-                      autocorrect: false,
-                      textCapitalization: TextCapitalization.sentences,
-                      controller: dialogTitleController,
-                      inputFormatters: [
-                        textInputFormatter,
-                      ],
-                      decoration: InputDecoration(
-                        hintText: hintText ?? "",
-                      ),
-                      maxLength: 30,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(right: 15),
-                    child: TextField(
-                      enabled: enabled ?? true,
-                      controller: dialogAmountController,
-                      decoration: InputDecoration(
-                        hintText: "Amount",
-                        suffixIcon: Icon(Icons.euro_symbol, size: 15),
-                      ),
-                      keyboardType: TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        amountInputFormatter,
-                      ],
-                      style: TextStyle(
-                        color: enabled ?? true ? Colors.black : Colors.grey,
+                  if (haveTextFields)
+                    Padding(
+                      padding: EdgeInsets.only(right: 15, top: 10, left: 15),
+                      child: TextField(
+                        textInputAction: TextInputAction.next,
+                        autocorrect: false,
+                        textCapitalization: TextCapitalization.sentences,
+                        controller: dialogTitleController,
+                        inputFormatters: [
+                          textInputFormatter,
+                        ],
+                        decoration: InputDecoration(
+                          hintText: hintText ?? "",
+                        ),
+                        maxLength: 30,
+                        keyboardType: TextInputType.text,
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                  if (haveTextFields)
+                    Padding(
+                      padding: EdgeInsets.only(right: 15, left: 15),
+                      child: TextField(
+                        textInputAction: TextInputAction.done,
+                        enabled: enabled ?? true,
+                        controller: dialogAmountController,
+                        decoration: InputDecoration(
+                          hintText: "Amount",
+                          suffixIcon: Icon(Icons.euro_symbol, size: 15),
+                        ),
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          amountInputFormatter,
+                        ],
+                        style: TextStyle(
+                          color: enabled ?? true ? Colors.black : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  // in case of simple alert dialog
+                  if (!haveTextFields)
+                    Padding(
+                      padding: EdgeInsets.all(15),
+                      child: Text(
+                        contentText ?? "",
+                        style: TextStyle(height: 1.5),
+                      ),
+                    ),
+                  Container(
+                    padding: EdgeInsets.only(top: 15),
+                    child: Column(
                       children: [
-                        FlatButton(child: Text("Save"), onPressed: onPressedOk),
-                        FlatButton(
-                          child: Text("Cancel"),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                        Container(
+                          height: 0.5,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                highlightColor: Theme.of(context).primaryColor,
+                                borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(18)),
+                                onTap: onPressedOk,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 50,
+                                  child: Text(
+                                    haveTextFields
+                                        ? "Save"
+                                        : okButtonName ?? "Ok",
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 0.5,
+                              height: 50,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            Expanded(
+                              child: InkWell(
+                                highlightColor: Theme.of(context).primaryColor,
+                                borderRadius: BorderRadius.only(
+                                    bottomRight: Radius.circular(18)),
+                                child: Container(
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        bottomRight: Radius.circular(18),
+                                      ),
+                                    ),
+                                    height: 50,
+                                    child: Text("Cancel")),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -188,32 +257,6 @@ Future<dynamic> alertDialogWithFields(
           ),
         );
       });
-}
-
-Future<dynamic> simpleAlertDialog(
-    {@required BuildContext context,
-    @required onPressedOk,
-    @required String title,
-    @required String contentText}) {
-  return showDialog(
-    context: context,
-    child: AlertDialog(
-      title: Text(
-        title ?? "",
-        style: TextStyle(fontSize: 18),
-      ),
-      content: Text(contentText),
-      actions: [
-        FlatButton(child: Text("Ok"), onPressed: onPressedOk),
-        FlatButton(
-          child: Text("Cancel"),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    ),
-  );
 }
 
 Future<dynamic> pushReplacement(

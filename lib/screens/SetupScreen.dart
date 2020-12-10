@@ -46,7 +46,9 @@ class SetupScreenState extends State<SetupScreen> {
       onWillPop: () async => isExpenses ? true : false,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(isExpenses ? addExpensesTitle : addIncomesTitle),
+          title: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(isExpenses ? addExpensesTitle : addIncomesTitle)),
           // disable going back from appBar
           automaticallyImplyLeading: isExpenses ? true : false,
         ),
@@ -82,8 +84,9 @@ class SetupScreenState extends State<SetupScreen> {
                                 : itemsList[index].amount.toString();
 
                         if (!isSelected(index)) {
-                          alertDialogWithFields(
+                          alertDialog(
                               context: context,
+                              haveTextFields: true,
                               title: isExpenses
                                   ? expenseDialogTitle
                                   : incomeDialogTitle,
@@ -177,8 +180,9 @@ class SetupScreenState extends State<SetupScreen> {
                     dialogTitleController.text = "";
                     dialogAmountController.text = "";
                   });
-                  alertDialogWithFields(
+                  alertDialog(
                       context: context,
+                      haveTextFields: true,
                       title:
                           isExpenses ? expenseDialogTitle : incomeDialogTitle,
                       hintText: isExpenses ? expenseType : incomeType,
@@ -189,7 +193,8 @@ class SetupScreenState extends State<SetupScreen> {
                             itemsList: itemsList);
 
                         if (alreadyExists) {
-                          simpleAlertDialog(
+                          alertDialog(
+                              haveTextFields: false,
                               context: context,
                               onPressedOk: () => Navigator.pop(context),
                               title: "Sorry",

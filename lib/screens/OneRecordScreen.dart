@@ -107,8 +107,9 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             : "Category title"),
                     if (widget.isNewExpenseCategory || category != null)
                       TextField(
+                        textInputAction: TextInputAction.next,
                         inputFormatters: [
-                         textInputFormatter,
+                          textInputFormatter,
                         ],
                         enabled: category == null ? true : false,
                         style: TextStyle(
@@ -152,6 +153,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                       children: [
                         titleText(title: "Description"),
                         TextField(
+                          textInputAction: TextInputAction.next,
                           inputFormatters: [
                             textInputFormatter,
                           ],
@@ -174,6 +176,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             children: [
                               titleText(title: "Amount"),
                               TextField(
+                                textInputAction: TextInputAction.done,
                                 maxLines: 1,
                                 controller: amountController,
                                 decoration: InputDecoration(

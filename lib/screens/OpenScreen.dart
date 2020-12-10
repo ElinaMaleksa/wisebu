@@ -25,9 +25,12 @@ class OpenScreen extends StatelessWidget {
                 color: Theme.of(context).primaryColor,
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height * 0.65,
-                child: Image.asset(
-                  "lib/images/illustration.png",
-                  scale: 4,
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Image.asset(
+                    "lib/images/illustration.png",
+                    // scale: 2,
+                  ),
                 ),
               ),
             ),
@@ -36,10 +39,11 @@ class OpenScreen extends StatelessWidget {
                     alignment: Alignment.center,
                     padding: EdgeInsets.symmetric(
                         horizontal: MediaQuery.of(context).size.width * 0.1),
-                    child: Text('Classify your expenses\nto spend wisely',
+                    child: Text('Classify your expenses to spend wisely',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.height * 0.035,
+                          fontSize: MediaQuery.of(context).size.height *
+                              (isPortrait(context) ? 0.031 : 0.05),
                         )))),
             Container(
               margin: EdgeInsets.only(

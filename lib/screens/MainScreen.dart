@@ -1,6 +1,4 @@
 import 'package:clippy_flutter/clippy_flutter.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -96,9 +94,7 @@ class MainScreenState extends State<MainScreen> {
             inkwellIcon(
               tooltip: "Open current month",
               iconData: Icons.calendar_today,
-              onTap: () async {
-                //FirebaseCrashlytics.instance.crash();
-               FirebaseCrashlytics.instance.log("message test");
+              onTap: () {
                 if (dateTimeShowed.toString().substring(0, 7) !=
                     DateTime.now().toString().substring(0, 7)) {
                   dateTimeShowed = DateTime.now();
@@ -148,7 +144,7 @@ class MainScreenState extends State<MainScreen> {
         dateTimeShowed.isAfter(firstDate) && dateTimeShowed.isBefore(lastDate);
   }
 
-  // group expenses by title and sum amount
+// group expenses by title and sum amount
   void groupExpensesByTitle(Category category) {
     double totalAmount = 0;
     for (var i in expenseList)
@@ -193,9 +189,10 @@ class MainScreenState extends State<MainScreen> {
                           header(context: context),
                           if (incomeList.length > 0 || expenseList.length > 0)
                             Container(
-                              height: MediaQuery.of(context).size.height * 0.23,
-                              //height: 150,
-                              padding: EdgeInsets.all(10),
+                              height: MediaQuery.of(context).size.height *
+                                  (isPortrait(context) ? 0.22 : 0.4),
+                              padding:
+                                  EdgeInsets.only(top: 10, right: 10, left: 10),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -210,9 +207,7 @@ class MainScreenState extends State<MainScreen> {
                                           color: Theme.of(context).primaryColor,
                                           amount: totalIncomes,
                                         ),
-                                        SizedBox(
-                                          height: 20,
-                                        ),
+                                        SizedBox(height: 20),
                                         listTileSum(
                                           context: context,
                                           color: Theme.of(context).accentColor,
@@ -232,6 +227,7 @@ class MainScreenState extends State<MainScreen> {
                                 ],
                               ),
                             ),
+                          SizedBox(height: 10),
                           categoryData(
                               context: context,
                               type: incomeType,
@@ -243,14 +239,18 @@ class MainScreenState extends State<MainScreen> {
                               type: expenseType,
                               dataList: groupedExpenses,
                               typeColor: Theme.of(context).accentColor),
+                          SizedBox(height: 20),
                           if (incomeList.isEmpty && expenseList.isEmpty)
                             Container(
                               alignment: Alignment.center,
-                              padding: EdgeInsets.only(top: 20),
+                              padding: EdgeInsets.only(bottom: 20),
                               child: Column(
                                 children: [
                                   SizedBox(
-                                    width: 250,
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.7,
+                                    height: MediaQuery.of(context).size.height *
+                                        (isPortrait(context) ? 0.45 : 0.7),
                                     child: Container(
                                       padding: EdgeInsets.only(bottom: 10),
                                       foregroundDecoration: BoxDecoration(
@@ -263,12 +263,15 @@ class MainScreenState extends State<MainScreen> {
                                       ),
                                     ),
                                   ),
-                                  Text(
-                                    "NOTHING TO SHOW",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                      color: Colors.grey,
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      "NOTHING TO SHOW",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                   )
                                 ],
@@ -408,8 +411,9 @@ class MainScreenState extends State<MainScreen> {
                         dialogTitleController.text = dataList[index].title;
                         dialogAmountController.text =
                             dataList[index].amount.toString();
-                        alertDialogWithFields(
+                        alertDialog(
                           context: context,
+                          haveTextFields: true,
                           title: "Edit income",
                           hintText: "Income",
                           onPressedOk: () {
@@ -432,11 +436,15 @@ class MainScreenState extends State<MainScreen> {
                     }
                   },
                   onLongPressed: () {
-                    simpleAlertDialog(
+                    alertDialog(
+                      haveTextFields: false,
                       context: context,
                       title: "Delete?",
+                      okButtonName: "Delete",
                       contentText:
-                          "\"${dataList[index].title}\" category and it\'s records will be removed forever.",
+                          "\"${dataList[index].title}\" category and it\'s records "
+                          "for ${DateFormat.MMMM().format(dateTimeShowed)} "
+                          "${dateTimeShowed.year} will be gone forever.",
                       onPressedOk: () {
                         // delete income record
                         if (dataList[index].type == incomeType)
@@ -515,7 +523,7 @@ class MainScreenState extends State<MainScreen> {
                     flex: 7,
                     child: Text(
                       title,
-                      style: TextStyle(fontSize: 17),
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                   Flexible(
@@ -552,12 +560,16 @@ class MainScreenState extends State<MainScreen> {
       @required List<Category> dataList}) {
     return Stack(
       children: <Widget>[
-        Arc(
-          arcType: type == expenseType ? ArcType.CONVEX : ArcType.CONVEY,
-          height: 15,
-          child: Container(
-            color: typeColor,
-            height: 60,
+        Padding(
+          // make heading line height using this top padding
+          padding: EdgeInsets.only(top: 3),
+          child: Arc(
+            arcType: type == expenseType ? ArcType.CONVEX : ArcType.CONVEY,
+            height: 15,
+            child: Container(
+              color: typeColor,
+              height: 60,
+            ),
           ),
         ),
         Arc(
@@ -565,7 +577,7 @@ class MainScreenState extends State<MainScreen> {
           height: 15,
           child: Container(
             color: Theme.of(context).scaffoldBackgroundColor,
-            height: 57,
+            height: 60,
           ),
         ),
         Padding(
@@ -595,8 +607,9 @@ class MainScreenState extends State<MainScreen> {
                             dialogTitleController.clear();
                             dialogAmountController.clear();
 
-                            alertDialogWithFields(
+                            alertDialog(
                               context: context,
+                              haveTextFields: true,
                               title: type == expenseType
                                   ? expenseDialogTitle
                                   : incomeDialogTitle,
@@ -613,7 +626,8 @@ class MainScreenState extends State<MainScreen> {
 
                                 if (alreadyExists) {
                                   Navigator.pop(context);
-                                  simpleAlertDialog(
+                                  alertDialog(
+                                      haveTextFields: false,
                                       context: context,
                                       onPressedOk: () => Navigator.pop(context),
                                       title: "Sorry",
@@ -669,14 +683,15 @@ class MainScreenState extends State<MainScreen> {
             child: Text(
               "${amountTextShown(amount: amount)} €",
               style: TextStyle(
-                fontSize: MediaQuery.of(context).size.height * 0.025,
+                fontSize: 16,
               ),
             ),
           ),
         ),
         leading: Container(
           color: color,
-          width: MediaQuery.of(context).size.width * 0.05,
+          width: MediaQuery.of(context).size.width *
+              (isPortrait(context) ? 0.05 : 0.03),
         ),
       ),
     );
