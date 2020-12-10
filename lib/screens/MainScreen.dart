@@ -1,4 +1,6 @@
 import 'package:clippy_flutter/clippy_flutter.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -94,7 +96,9 @@ class MainScreenState extends State<MainScreen> {
             inkwellIcon(
               tooltip: "Open current month",
               iconData: Icons.calendar_today,
-              onTap: () {
+              onTap: () async {
+                //FirebaseCrashlytics.instance.crash();
+               FirebaseCrashlytics.instance.log("message test");
                 if (dateTimeShowed.toString().substring(0, 7) !=
                     DateTime.now().toString().substring(0, 7)) {
                   dateTimeShowed = DateTime.now();
@@ -189,7 +193,8 @@ class MainScreenState extends State<MainScreen> {
                           header(context: context),
                           if (incomeList.length > 0 || expenseList.length > 0)
                             Container(
-                              height: 150,
+                              height: MediaQuery.of(context).size.height * 0.23,
+                              //height: 150,
                               padding: EdgeInsets.all(10),
                               child: Row(
                                 mainAxisAlignment:
@@ -200,39 +205,24 @@ class MainScreenState extends State<MainScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        ListTile(
-                                          visualDensity: VisualDensity(
-                                              horizontal: -4, vertical: -4),
-                                          title: Text(
-                                            "${amountTextShown(amount: totalIncomes)} €",
-                                            style: TextStyle(fontSize: 16),
-                                          ),
-                                          leading: Container(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            width: 20,
-                                          ),
+                                        listTileSum(
+                                          context: context,
+                                          color: Theme.of(context).primaryColor,
+                                          amount: totalIncomes,
                                         ),
                                         SizedBox(
                                           height: 20,
                                         ),
-                                        ListTile(
-                                          visualDensity: VisualDensity(
-                                              horizontal: -4, vertical: -4),
-                                          title: Text(
-                                            "${amountTextShown(amount: totalExpenses)} €",
-                                            style: TextStyle(fontSize: 16),
-                                          ),
-                                          leading: Container(
-                                            color:
-                                                Theme.of(context).accentColor,
-                                            width: 20,
-                                          ),
+                                        listTileSum(
+                                          context: context,
+                                          color: Theme.of(context).accentColor,
+                                          amount: totalExpenses,
                                         ),
                                       ],
                                     ),
                                   ),
                                   circleAvatar(
+                                    context: context,
                                     color: Theme.of(context).primaryColor,
                                     textColor: Colors.white,
                                     mainText:
@@ -525,7 +515,7 @@ class MainScreenState extends State<MainScreen> {
                     flex: 7,
                     child: Text(
                       title,
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 17),
                     ),
                   ),
                   Flexible(
@@ -533,7 +523,7 @@ class MainScreenState extends State<MainScreen> {
                     child: FittedBox(
                       child: Text(
                         moneyAmount,
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
@@ -661,6 +651,34 @@ class MainScreenState extends State<MainScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget listTileSum(
+      {@required BuildContext context,
+      @required Color color,
+      @required double amount}) {
+    return Container(
+      margin: EdgeInsets.only(right: 20),
+      child: ListTile(
+        visualDensity: VisualDensity(horizontal: -4, vertical: -4),
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "${amountTextShown(amount: amount)} €",
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.height * 0.025,
+              ),
+            ),
+          ),
+        ),
+        leading: Container(
+          color: color,
+          width: MediaQuery.of(context).size.width * 0.05,
+        ),
+      ),
     );
   }
 }

@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "143319376941",
+    "project_id": "wisebu-app",
+    "storage_bucket": "wisebu-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:143319376941:android:731c0f0708693ab86c84a4",
+        "android_client_info": {
+          "package_name": "lv.prog.wisebu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "143319376941-f6kepkb7fjmaqtibvp50urj9tuacr7lo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgdEo4SHlcCGq-INVe55vhGC5yX6Hrpw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "143319376941-f6kepkb7fjmaqtibvp50urj9tuacr7lo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "143319376941-blkttq5c2m6hp0jd8fh2sjba24ti5kpo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "lv.prog.wisebu"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

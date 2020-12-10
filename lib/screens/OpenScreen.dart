@@ -36,11 +36,11 @@ class OpenScreen extends StatelessWidget {
                     alignment: Alignment.center,
                     padding: EdgeInsets.symmetric(
                         horizontal: MediaQuery.of(context).size.width * 0.1),
-                    child: Text(
-                      'Classify your expenses to spend wisely',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 23),
-                    ))),
+                    child: Text('Classify your expenses\nto spend wisely',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.height * 0.035,
+                        )))),
             Container(
               margin: EdgeInsets.only(
                   bottom: MediaQuery.of(context).size.height * 0.08),

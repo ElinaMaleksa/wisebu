@@ -124,7 +124,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                           right: MediaQuery.of(context).size.width * 0.05,
                           left: MediaQuery.of(context).size.width * 0.1,
                           bottom: 15),
-                      height: 150,
+                      height: MediaQuery.of(context).size.height * 0.23,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -139,8 +139,9 @@ class DetailsScreenState extends State<DetailsScreen> {
                           Flexible(
                             flex: 4,
                             child: Padding(
-                              padding: EdgeInsets.all(5),
+                              padding: EdgeInsets.all(7),
                               child: circleAvatar(
+                                  context: context,
                                   color: Colors.white,
                                   textColor: Theme.of(context).accentColor,
                                   mainText:
@@ -246,7 +247,6 @@ class DetailsScreenState extends State<DetailsScreen> {
                                               child: FittedBox(
                                                 child: Text(
                                                   "${amountTextShown(amount: itemsList[index].amount)} €",
-                                                  maxLines: 1,
                                                 ),
                                               ),
                                             ),

@@ -108,8 +108,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                     if (widget.isNewExpenseCategory || category != null)
                       TextField(
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(
-                              "[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEFa-zA-Z0-9 ,.!?]")),
+                         textInputFormatter,
                         ],
                         enabled: category == null ? true : false,
                         style: TextStyle(
@@ -154,8 +153,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                         titleText(title: "Description"),
                         TextField(
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(
-                                "[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEFa-zA-Z0-9 .?!,]")),
+                            textInputFormatter,
                           ],
                           textCapitalization: TextCapitalization.sentences,
                           controller: descriptionController,

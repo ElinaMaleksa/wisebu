@@ -9,6 +9,10 @@ TextEditingController dialogAmountController = TextEditingController();
 FilteringTextInputFormatter amountInputFormatter =
     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'));
 
+FilteringTextInputFormatter textInputFormatter =
+    FilteringTextInputFormatter.allow(
+        RegExp("[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEFa-zA-Z0-9 \)\(,./!?]"));
+
 DateTime lastDate = DateTime.now().add(Duration(days: 365));
 DateTime firstDate = DateTime.now().subtract(Duration(days: 365));
 
@@ -46,9 +50,10 @@ Widget circleAvatar(
     {@required Color color,
     @required Color textColor,
     @required String mainText,
-    String secondText}) {
+    String secondText,
+    BuildContext context}) {
   return CircleAvatar(
-    radius: 65,
+    radius: MediaQuery.of(context).size.height * 0.1,
     backgroundColor: color,
     child: Container(
       padding: EdgeInsets.all(20),
@@ -65,7 +70,7 @@ Widget circleAvatar(
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 25,
+                  fontSize: MediaQuery.of(context).size.height * 0.04,
                 ),
               ),
             ),
@@ -73,7 +78,10 @@ Widget circleAvatar(
           if (secondText != null)
             Text(
               secondText,
-              style: TextStyle(color: textColor, fontSize: 16),
+              style: TextStyle(
+                color: textColor,
+                fontSize: MediaQuery.of(context).size.height * 0.024,
+              ),
             ),
         ],
       ),
@@ -88,7 +96,7 @@ Widget newItemListTile(
     child: ListTile(
       title: Text(
         text,
-        style: TextStyle(fontSize: 18, color: Colors.grey[500]),
+        style: TextStyle(fontSize: 17, color: Colors.grey[500]),
       ),
       trailing: Icon(Icons.add_circle, size: 35, color: color),
     ),
@@ -115,10 +123,13 @@ Future<dynamic> alertDialogWithFields(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   FittedBox(
-                    child: Text(
-                      title,
-                      style:
-                          TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.65,
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                   Padding(
@@ -128,8 +139,7 @@ Future<dynamic> alertDialogWithFields(
                       textCapitalization: TextCapitalization.sentences,
                       controller: dialogTitleController,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp("[a-zA-Z0-9 .,?!]")),
+                        textInputFormatter,
                       ],
                       decoration: InputDecoration(
                         hintText: hintText ?? "",

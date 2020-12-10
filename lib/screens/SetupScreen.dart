@@ -122,9 +122,15 @@ class SetupScreenState extends State<SetupScreen> {
                         });
                       },
                       child: ListTile(
-                        title: Text(
-                          itemsList[index].title,
-                          style: TextStyle(fontSize: 18),
+                        title: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                itemsList[index].title,
+                                style: TextStyle(fontSize: 17),
+                              ),
+                            ),
+                          ],
                         ),
                         trailing: SizedBox(
                           width: MediaQuery.of(context).size.width * 0.3,
@@ -136,7 +142,8 @@ class SetupScreenState extends State<SetupScreen> {
                                 child: FittedBox(
                                   child: Padding(
                                     padding: EdgeInsets.only(right: 10),
-                                    child: Text("${itemsList[index].amount} €",
+                                    child: Text(
+                                        "${amountTextShown(amount: itemsList[index].amount)} €",
                                         style: TextStyle(fontSize: 15)),
                                   ),
                                 ),
