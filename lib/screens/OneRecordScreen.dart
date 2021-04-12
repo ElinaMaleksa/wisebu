@@ -309,7 +309,10 @@ class OneRecordScreenState extends State<OneRecordScreen> {
   }
 
   Widget datePicker({@required BuildContext context}) {
-    return OutlineButton(
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+      ),
       onPressed: () {
         hideKeyboard(context);
         if (dateTime.isAfter(firstDate) && dateTime.isBefore(lastDate))
@@ -332,9 +335,6 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                 "Date exceeds more than a year and could not be edited, sorry",
           );
       },
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5.0),
-      ),
       child: FittedBox(
         child: Text(
           formattedDate(dateTime.toString()),

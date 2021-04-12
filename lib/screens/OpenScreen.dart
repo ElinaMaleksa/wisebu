@@ -12,7 +12,7 @@ class OpenScreen extends StatelessWidget {
       onWillPop: () async => false,
       child: Scaffold(
         // to prevent exception from keyboard
-        resizeToAvoidBottomPadding: false,
+        resizeToAvoidBottomInset: false,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

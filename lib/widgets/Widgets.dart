@@ -26,12 +26,12 @@ Widget yellowButton(
   return SizedBox(
     height: 50,
     width: MediaQuery.of(context).size.width * (isLarge ? 0.7 : 0.3),
-    child: RaisedButton(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        primary: Theme.of(context).accentColor,
+        elevation: 1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
-      color: Theme.of(context).accentColor,
       child: FittedBox(
         child: Text(
           text,
