@@ -1,7 +1,6 @@
-import 'package:flushbar/flushbar.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:intl/intl.dart';
 
 TextEditingController dialogTitleController = TextEditingController();
@@ -28,7 +27,7 @@ Widget yellowButton(
     width: MediaQuery.of(context).size.width * (isLarge ? 0.7 : 0.3),
     child: ElevatedButton(
       style: ElevatedButton.styleFrom(
-        primary: Theme.of(context).accentColor,
+        primary: Theme.of(context).colorScheme.secondary,
         elevation: 1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
@@ -50,6 +49,11 @@ Widget yellowButton(
 bool isPortrait(BuildContext context) =>
     MediaQuery.of(context).orientation == Orientation.portrait;
 
+bool isTablet() => !(MediaQueryData.fromWindow(WidgetsBinding.instance.window)
+        .size
+        .shortestSide <
+    550);
+
 Widget circleAvatar(
     {@required Color color,
     @required Color textColor,
@@ -59,10 +63,10 @@ Widget circleAvatar(
   return CircleAvatar(
     radius: MediaQuery.of(context).size.height *
         (isPortrait(context)
-            ? Device.get().isTablet
+            ? isTablet()
                 ? 0.08
                 : 0.1
-            : Device.get().isTablet
+            : isTablet()
                 ? 0.1
                 : 0.2),
     backgroundColor: color,

@@ -1,5 +1,4 @@
 import 'package:clippy_flutter/clippy_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
@@ -120,7 +119,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                   Arc(
                     height: 30,
                     child: Container(
-                      color: Theme.of(context).accentColor,
+                      color: Theme.of(context).colorScheme.secondary,
                       padding: EdgeInsets.only(
                           right: MediaQuery.of(context).size.width * 0.05,
                           left: MediaQuery.of(context).size.width * 0.1,
@@ -145,7 +144,8 @@ class DetailsScreenState extends State<DetailsScreen> {
                               child: circleAvatar(
                                   context: context,
                                   color: Colors.white,
-                                  textColor: Theme.of(context).accentColor,
+                                  textColor:
+                                      Theme.of(context).colorScheme.secondary,
                                   mainText:
                                       "-${amountTextShown(amount: total)} €"),
                             ),
@@ -240,7 +240,8 @@ class DetailsScreenState extends State<DetailsScreen> {
                                                     "",
                                                 style: TextStyle(
                                                     color: Theme.of(context)
-                                                        .accentColor),
+                                                        .colorScheme
+                                                        .secondary),
                                               ),
                                             ),
                                           ),
@@ -267,7 +268,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                             padding: EdgeInsets.symmetric(horizontal: 20),
                             child: newItemListTile(
                               text: "Add expense",
-                              color: Theme.of(context).accentColor,
+                              color: Theme.of(context).colorScheme.secondary,
                               onPressed: () {
                                 navigateToOneRecordScreen(
                                   childScreen: OneRecordScreen(

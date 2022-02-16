@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/blocs/BlocProvider.dart';
@@ -218,25 +216,28 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                           onPressed: () {
                             if (titleController.text.length > 30) {
                               snackBar(
-                                  context: context,
-                                  infoMessage:
-                                      "Please enter a title with valid length!",
-                                  backgroundColor:
-                                      Theme.of(context).accentColor);
+                                context: context,
+                                infoMessage:
+                                    "Please enter a title with valid length!",
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.secondary,
+                              );
                             } else if (descriptionController.text.length >
                                 200) {
                               snackBar(
-                                  context: context,
-                                  infoMessage:
-                                      "Please enter a description with valid length!",
-                                  backgroundColor:
-                                      Theme.of(context).accentColor);
+                                context: context,
+                                infoMessage:
+                                    "Please enter a description with valid length!",
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.secondary,
+                              );
                             } else if (amountController.text.isEmpty) {
                               snackBar(
-                                  context: context,
-                                  infoMessage: "Please enter a valid amount!",
-                                  backgroundColor:
-                                      Theme.of(context).accentColor);
+                                context: context,
+                                infoMessage: "Please enter a valid amount!",
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.secondary,
+                              );
                             } else {
                               if (category == null) {
                                 Category category = Category(
@@ -265,7 +266,8 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                                     context: context,
                                     infoMessage: "Record saved!");
                               } else {
-                                categoriesBloc.handleUpdateCategory(Category(
+                                categoriesBloc.handleUpdateCategory(
+                                  Category(
                                     id: category.id,
                                     title: titleController.text
                                                 .trimRight()
@@ -282,7 +284,9 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                                             .trimLeft() ??
                                         "",
                                     date: dateTime.toString(),
-                                    type: category.type));
+                                    type: category.type,
+                                  ),
+                                );
 
                                 Navigator.of(context).pop(true);
                                 snackBar(

@@ -26,11 +26,11 @@ class MyApp extends StatelessWidget {
         fontFamily: "Spartan",
         primarySwatch: Colors.blue,
         primaryColor: Color(0xFF0072B1),
-        accentColor: Color(0xFFF3C623),
         visualDensity: VisualDensity.adaptivePlatformDensity,
         // color for date picker same as primaryColor
         colorScheme: ColorScheme.light(
           primary: Color(0xFF0072B1),
+          secondary: Color(0xFFF3C623),
         ),
       ),
       home: SplashScreen(),

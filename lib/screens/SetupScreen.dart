@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
@@ -241,7 +240,7 @@ class SetupScreenState extends State<SetupScreen> {
                         type: expenseType,
                         incomesList: selectedIncomes,
                         buttonText: "Finish",
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     );
                 },

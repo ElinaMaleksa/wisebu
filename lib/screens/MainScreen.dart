@@ -1,8 +1,6 @@
 import 'package:clippy_flutter/clippy_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:intl/intl.dart';
 import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
@@ -193,7 +191,7 @@ class MainScreenState extends State<MainScreen> {
                               height: MediaQuery.of(context).size.height *
                                   (isPortrait(context)
                                       ? 0.22
-                                      : Device.get().isTablet
+                                      : isTablet()
                                           ? 0.25
                                           : 0.4),
                               padding:
@@ -215,7 +213,9 @@ class MainScreenState extends State<MainScreen> {
                                         SizedBox(height: 20),
                                         listTileSum(
                                           context: context,
-                                          color: Theme.of(context).accentColor,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
                                           amount: totalExpenses,
                                         ),
                                       ],
@@ -223,7 +223,7 @@ class MainScreenState extends State<MainScreen> {
                                   ),
                                   Padding(
                                     padding: EdgeInsets.only(
-                                        right: Device.get().isTablet
+                                        right: isTablet()
                                             ? MediaQuery.of(context)
                                                     .size
                                                     .width *
@@ -249,10 +249,11 @@ class MainScreenState extends State<MainScreen> {
                               typeColor: Theme.of(context).primaryColor),
                           SizedBox(height: 10),
                           categoryData(
-                              context: context,
-                              type: expenseType,
-                              dataList: groupedExpenses,
-                              typeColor: Theme.of(context).accentColor),
+                            context: context,
+                            type: expenseType,
+                            dataList: groupedExpenses,
+                            typeColor: Theme.of(context).colorScheme.secondary,
+                          ),
                           SizedBox(height: 20),
                           if (incomeList.isEmpty && expenseList.isEmpty)
                             Container(
@@ -266,7 +267,7 @@ class MainScreenState extends State<MainScreen> {
                                     height: MediaQuery.of(context).size.height *
                                         (isPortrait(context)
                                             ? 0.45
-                                            : Device.get().isTablet
+                                            : isTablet()
                                                 ? 0.5
                                                 : 0.7),
                                     child: Container(
@@ -710,10 +711,10 @@ class MainScreenState extends State<MainScreen> {
           color: color,
           width: MediaQuery.of(context).size.width *
               (isPortrait(context)
-                  ? Device.get().isTablet
+                  ? isTablet()
                       ? 0.03
                       : 0.05
-                  : Device.get().isTablet
+                  : isTablet()
                       ? 0.015
                       : 0.03),
         ),
