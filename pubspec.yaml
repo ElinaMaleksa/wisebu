@@ -15,6 +15,7 @@ dependencies:
   shared_preferences: ^2.0.13
   another_flushbar: ^1.10.28
   path_provider: ^2.0.9
+  fl_chart: ^0.50.1
 
   flutter:
     sdk: flutter

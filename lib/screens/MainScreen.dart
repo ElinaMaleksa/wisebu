@@ -6,6 +6,8 @@ import 'package:wisebu/data/Category.dart';
 import 'package:wisebu/data/Data.dart';
 import 'package:wisebu/data/blocs/BlocProvider.dart';
 import 'package:wisebu/data/blocs/CategoriesBloc.dart';
+import 'package:wisebu/screens/AllRecordsScreen.dart';
+import 'package:wisebu/screens/AnalyticsScreen.dart';
 import 'package:wisebu/screens/DetailsScreen.dart';
 import 'package:wisebu/screens/OneRecordScreen.dart';
 import 'package:wisebu/widgets/Widgets.dart';
@@ -27,28 +29,29 @@ class MainScreenState extends State<MainScreen> {
   CategoriesBloc categoriesBloc;
 
   PageController pageController = PageController(initialPage: 999);
-  bool showDateForward = true;
-  bool allowToEditData;
+  bool showDateForward, allowToEditData;
   DateTime dateTimeShowed;
-
-  double totalIncomes = 0;
-  double totalExpenses = 0;
-  List<Category> incomeList = [];
-  List<Category> expenseList = [];
-  List<Category> groupedExpenses = [];
+  double totalIncomes, totalExpenses;
+  List<Category> incomeList, expenseList, groupedExpenses, fullDataList;
 
   @override
   void initState() {
     super.initState();
+    showDateForward = true;
+    totalIncomes = 0;
+    totalExpenses = 0;
+    incomeList = [];
+    expenseList = [];
+    groupedExpenses = [];
+    fullDataList = [];
+
     categoriesBloc = BlocProvider.of<CategoriesBloc>(context);
 
     // first time when app opens set up data
     if (widget.incomesSetUpList != null)
-      for (var category in widget.incomesSetUpList)
-        categoriesBloc.inAddCategory.add(category);
+      for (var category in widget.incomesSetUpList) categoriesBloc.inAddCategory.add(category);
     if (widget.expensesSetUpList != null)
-      for (var category in widget.expensesSetUpList)
-        categoriesBloc.inAddCategory.add(category);
+      for (var category in widget.expensesSetUpList) categoriesBloc.inAddCategory.add(category);
 
     // set header date
     dateTimeShowed = DateTime.now();
@@ -91,11 +94,22 @@ class MainScreenState extends State<MainScreen> {
           automaticallyImplyLeading: false,
           actions: [
             inkwellIcon(
+              tooltip: "Full list of records",
+              iconData: Icons.list,
+              onTap: () => push(context: context, nextScreen: AllRecordsScreen(fullDataList: fullDataList)),
+            ),
+            SizedBox(width: 10),
+            inkwellIcon(
+              tooltip: "Analytics",
+              iconData: Icons.analytics_outlined,
+              onTap: () => push(context: context, nextScreen: AnalyticsScreen(fullDataList: fullDataList)),
+            ),
+            SizedBox(width: 10),
+            inkwellIcon(
               tooltip: "Open current month",
               iconData: Icons.calendar_today,
               onTap: () {
-                if (dateTimeShowed.toString().substring(0, 7) !=
-                    DateTime.now().toString().substring(0, 7)) {
+                if (dateTimeShowed.toString().substring(0, 7) != DateTime.now().toString().substring(0, 7)) {
                   dateTimeShowed = DateTime.now();
                   categoriesBloc.getCategories();
                 }
@@ -139,19 +153,16 @@ class MainScreenState extends State<MainScreen> {
     expenseList.sort((a, b) => a.title.compareTo(b.title));
 
     // check if user is allowed to edit or add new data
-    allowToEditData =
-        dateTimeShowed.isAfter(firstDate) && dateTimeShowed.isBefore(lastDate);
+    allowToEditData = dateTimeShowed.isAfter(firstDate) && dateTimeShowed.isBefore(lastDate);
   }
 
 // group expenses by title and sum amount
   void groupExpensesByTitle(Category category) {
     double totalAmount = 0;
-    for (var i in expenseList)
-      if (i.title == category.title) totalAmount += i.amount;
+    for (var i in expenseList) if (i.title == category.title) totalAmount += i.amount;
 
     int index = groupedExpenses.indexWhere((i) {
-      return i.title == category.title &&
-          i.date.substring(0, 7) == category.date.substring(0, 7);
+      return i.title == category.title && i.date.substring(0, 7) == category.date.substring(0, 7);
     });
 
     if (index < 0)
@@ -171,141 +182,97 @@ class MainScreenState extends State<MainScreen> {
     return Expanded(
       child: StreamBuilder<List<Category>>(
         stream: categoriesBloc.categories,
-        builder:
-            (BuildContext context, AsyncSnapshot<List<Category>> snapshot) {
-          if (snapshot.hasData) {
-            setData(snapshot.data);
+        builder: (BuildContext context, AsyncSnapshot<List<Category>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return Text("Error has occurred...");
+            } else if (snapshot.hasData) {
+              fullDataList = snapshot.data;
+              setData(snapshot.data);
 
-            return PageView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                controller: pageController,
-                itemBuilder: (context, position) {
-                  return ListView(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          header(context: context),
-                          if (incomeList.length > 0 || expenseList.length > 0)
-                            Container(
-                              height: MediaQuery.of(context).size.height *
-                                  (isPortrait(context)
-                                      ? 0.22
-                                      : isTablet()
-                                          ? 0.25
-                                          : 0.4),
-                              padding:
-                                  EdgeInsets.only(top: 10, right: 10, left: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        listTileSum(
-                                          context: context,
-                                          color: Theme.of(context).primaryColor,
-                                          amount: totalIncomes,
-                                        ),
-                                        SizedBox(height: 20),
-                                        listTileSum(
-                                          context: context,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .secondary,
-                                          amount: totalExpenses,
-                                        ),
-                                      ],
+              return PageView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  controller: pageController,
+                  itemBuilder: (context, position) {
+                    return ListView(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            header(context: context),
+                            if (incomeList.length > 0 || expenseList.length > 0)
+                              Container(
+                                height: MediaQuery.of(context).size.height *
+                                    (isPortrait(context)
+                                        ? 0.22
+                                        : isTablet()
+                                            ? 0.25
+                                            : 0.4),
+                                padding: EdgeInsets.only(top: 10, right: 10, left: 10),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          listTileSum(
+                                            context: context,
+                                            color: Theme.of(context).primaryColor,
+                                            amount: totalIncomes,
+                                          ),
+                                          SizedBox(height: 20),
+                                          listTileSum(
+                                            context: context,
+                                            color: Theme.of(context).colorScheme.secondary,
+                                            amount: totalExpenses,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                        right: isTablet()
-                                            ? MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.05
-                                            : 0),
-                                    child: circleAvatar(
-                                      context: context,
-                                      color: Theme.of(context).primaryColor,
-                                      textColor: Colors.white,
-                                      mainText:
-                                          "${amountTextShown(amount: totalIncomes - totalExpenses)} €",
-                                      secondText: "left",
-                                    ),
-                                  )
-                                ],
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                          right: isTablet() ? MediaQuery.of(context).size.width * 0.05 : 0),
+                                      child: circleAvatar(
+                                        context: context,
+                                        color: Theme.of(context).primaryColor,
+                                        textColor: Colors.white,
+                                        mainText: "${amountTextShown(amount: totalIncomes - totalExpenses)} €",
+                                        secondText: "left",
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                          SizedBox(height: 10),
-                          categoryData(
+                            SizedBox(height: 10),
+                            categoryData(
+                                context: context,
+                                type: incomeType,
+                                dataList: incomeList,
+                                typeColor: Theme.of(context).primaryColor),
+                            SizedBox(height: 10),
+                            categoryData(
                               context: context,
-                              type: incomeType,
-                              dataList: incomeList,
-                              typeColor: Theme.of(context).primaryColor),
-                          SizedBox(height: 10),
-                          categoryData(
-                            context: context,
-                            type: expenseType,
-                            dataList: groupedExpenses,
-                            typeColor: Theme.of(context).colorScheme.secondary,
-                          ),
-                          SizedBox(height: 20),
-                          if (incomeList.isEmpty && expenseList.isEmpty)
-                            Container(
-                              alignment: Alignment.center,
-                              padding: EdgeInsets.only(bottom: 20),
-                              child: Column(
-                                children: [
-                                  SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.7,
-                                    height: MediaQuery.of(context).size.height *
-                                        (isPortrait(context)
-                                            ? 0.45
-                                            : isTablet()
-                                                ? 0.5
-                                                : 0.7),
-                                    child: Container(
-                                      padding: EdgeInsets.only(bottom: 10),
-                                      foregroundDecoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        backgroundBlendMode:
-                                            BlendMode.saturation,
-                                      ),
-                                      child: Image.asset(
-                                        "lib/images/illustration.png",
-                                      ),
-                                    ),
-                                  ),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      "NOTHING TO SHOW",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
+                              type: expenseType,
+                              dataList: groupedExpenses,
+                              typeColor: Theme.of(context).colorScheme.secondary,
                             ),
-                        ],
-                      ),
-                    ],
-                  );
-                });
+                            SizedBox(height: 20),
+                            if (incomeList.isEmpty && expenseList.isEmpty) emptyScreen()
+                          ],
+                        ),
+                      ],
+                    );
+                  });
+            } else {
+              return emptyScreen();
+            }
+          } else {
+            return Text('State: ${snapshot.connectionState}');
           }
-
-          return Center(
-            child: CircularProgressIndicator(),
-          );
         },
       ),
     );
@@ -320,37 +287,25 @@ class MainScreenState extends State<MainScreen> {
         children: <Widget>[
           Flexible(
             flex: 2,
-            child: headerIcon(
-                context: context,
-                iconData: Icons.arrow_back_ios,
-                isForward: false),
+            child: headerIcon(context: context, iconData: Icons.arrow_back_ios, isForward: false),
           ),
           Flexible(
             flex: 6,
             child: Text(
               DateFormat('MMMM, y').format(dateTimeShowed),
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-              ),
+              style: TextStyle(color: Colors.black, fontSize: 18),
             ),
           ),
           Flexible(
             flex: 2,
-            child: headerIcon(
-                context: context,
-                iconData: Icons.arrow_forward_ios,
-                isForward: true),
+            child: headerIcon(context: context, iconData: Icons.arrow_forward_ios, isForward: true),
           ),
         ],
       ),
     );
   }
 
-  IconButton headerIcon(
-      {@required BuildContext context,
-      @required IconData iconData,
-      @required bool isForward}) {
+  IconButton headerIcon({@required BuildContext context, @required IconData iconData, @required bool isForward}) {
     return IconButton(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -366,15 +321,11 @@ class MainScreenState extends State<MainScreen> {
 
   void changeText(showDateForward) {
     if (showDateForward == false) {
-      dateTimeShowed =
-          DateTime(dateTimeShowed.year, dateTimeShowed.month - 1, 1);
-      pageController.previousPage(
-          duration: Duration(milliseconds: 1), curve: Curves.linear);
+      dateTimeShowed = DateTime(dateTimeShowed.year, dateTimeShowed.month - 1, 1);
+      pageController.previousPage(duration: Duration(milliseconds: 1), curve: Curves.linear);
     } else if (showDateForward == true) {
-      dateTimeShowed =
-          DateTime(dateTimeShowed.year, dateTimeShowed.month + 1, 1);
-      pageController.nextPage(
-          duration: Duration(milliseconds: 1), curve: Curves.linear);
+      dateTimeShowed = DateTime(dateTimeShowed.year, dateTimeShowed.month + 1, 1);
+      pageController.nextPage(duration: Duration(milliseconds: 1), curve: Curves.linear);
     }
     // reset data after changing month in header
     categoriesBloc.getCategories();
@@ -403,8 +354,7 @@ class MainScreenState extends State<MainScreen> {
                   context: context,
                   isExpense: type == incomeType ? false : true,
                   title: dataList[index].title,
-                  moneyAmount:
-                      "${amountTextShown(amount: dataList[index].amount)} €",
+                  moneyAmount: "${amountTextShown(amount: dataList[index].amount)} €",
                   color: typeColor,
                   onIconPressed: () {
                     // add new expense in existing category
@@ -414,10 +364,10 @@ class MainScreenState extends State<MainScreen> {
                           isNewExpenseCategory: false,
                           expenseList: dataList,
                           expenseCategoryTitle: dataList[index].title,
-                          date: dateTimeShowed.year == DateTime.now().year &&
-                                  dateTimeShowed.month == DateTime.now().month
-                              ? DateTime.now().toString()
-                              : dateWithZeroTime(dateTimeShowed).toString(),
+                          date:
+                              dateTimeShowed.year == DateTime.now().year && dateTimeShowed.month == DateTime.now().month
+                                  ? DateTime.now().toString()
+                                  : dateWithZeroTime(dateTimeShowed).toString(),
                         ),
                       );
                   },
@@ -428,8 +378,7 @@ class MainScreenState extends State<MainScreen> {
                     else {
                       if (allowToEditData) {
                         dialogTitleController.text = dataList[index].title;
-                        dialogAmountController.text =
-                            dataList[index].amount.toString();
+                        dialogAmountController.text = dataList[index].amount.toString();
                         alertDialog(
                           context: context,
                           haveTextFields: true,
@@ -460,20 +409,16 @@ class MainScreenState extends State<MainScreen> {
                       context: context,
                       title: "Delete?",
                       okButtonName: "Delete",
-                      contentText:
-                          "\"${dataList[index].title}\" category and it\'s records "
+                      contentText: "\"${dataList[index].title}\" category and it\'s records "
                           "for ${DateFormat.MMMM().format(dateTimeShowed)} "
                           "${dateTimeShowed.year} will be gone forever.",
                       onPressedOk: () {
                         // delete income record
                         if (dataList[index].type == incomeType)
-                          categoriesBloc.inDeleteCategory
-                              .add(dataList[index].id);
+                          categoriesBloc.inDeleteCategory.add(dataList[index].id);
                         else // delete all grouped expense records in current month
                           categoriesBloc.handleDeleteExpenseRecords(
-                              title: dataList[index].title,
-                              type: dataList[index].type,
-                              date: dataList[index].date);
+                              title: dataList[index].title, type: dataList[index].type, date: dataList[index].date);
                         Navigator.pop(context);
                       },
                     );
@@ -573,10 +518,7 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget categoryTitle(
-      {@required String type,
-      @required Color typeColor,
-      @required List<Category> dataList}) {
+  Widget categoryTitle({@required String type, @required Color typeColor, @required List<Category> dataList}) {
     return Stack(
       children: <Widget>[
         Padding(
@@ -606,10 +548,7 @@ class MainScreenState extends State<MainScreen> {
               Expanded(
                 child: Text(
                   type,
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: typeColor,
-                      fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, color: typeColor, fontWeight: FontWeight.bold),
                 ),
               ),
               Container(
@@ -617,8 +556,7 @@ class MainScreenState extends State<MainScreen> {
                 width: 50,
                 child: allowToEditData
                     ? inkwellIcon(
-                        tooltip:
-                            type == incomeType ? "Add income" : "Add expense",
+                        tooltip: type == incomeType ? "Add income" : "Add expense",
                         iconData: Icons.add_circle,
                         color: typeColor,
                         onTap: () {
@@ -629,19 +567,13 @@ class MainScreenState extends State<MainScreen> {
                             alertDialog(
                               context: context,
                               haveTextFields: true,
-                              title: type == expenseType
-                                  ? expenseDialogTitle
-                                  : incomeDialogTitle,
-                              hintText: type == expenseType
-                                  ? expenseType
-                                  : incomeType,
+                              title: type == expenseType ? expenseDialogTitle : incomeDialogTitle,
+                              hintText: type == expenseType ? expenseType : incomeType,
                               onPressedOk: () {
                                 hideKeyboard(context);
 
-                                bool alreadyExists = doExist(
-                                    title: titleFromDialog(type),
-                                    type: type,
-                                    itemsList: dataList);
+                                bool alreadyExists =
+                                    doExist(title: titleFromDialog(type), type: type, itemsList: dataList);
 
                                 if (alreadyExists) {
                                   Navigator.pop(context);
@@ -656,8 +588,7 @@ class MainScreenState extends State<MainScreen> {
                                     title: titleFromDialog(type),
                                     type: type,
                                     amount: amountFromDialog(),
-                                    date: dateWithZeroTime(dateTimeShowed)
-                                        .toString(),
+                                    date: dateWithZeroTime(dateTimeShowed).toString(),
                                   ));
                                   Navigator.of(context).pop();
                                 }
@@ -668,13 +599,10 @@ class MainScreenState extends State<MainScreen> {
                             pushToOneCategoryScreen(
                               OneRecordScreen(
                                 isNewExpenseCategory: true,
-                                date: dateTimeShowed.year ==
-                                            DateTime.now().year &&
-                                        dateTimeShowed.month ==
-                                            DateTime.now().month
+                                date: dateTimeShowed.year == DateTime.now().year &&
+                                        dateTimeShowed.month == DateTime.now().month
                                     ? DateTime.now().toString()
-                                    : dateWithZeroTime(dateTimeShowed)
-                                        .toString(),
+                                    : dateWithZeroTime(dateTimeShowed).toString(),
                               ),
                             );
                         })
@@ -687,10 +615,7 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget listTileSum(
-      {@required BuildContext context,
-      @required Color color,
-      @required double amount}) {
+  Widget listTileSum({@required BuildContext context, @required Color color, @required double amount}) {
     return Container(
       margin: EdgeInsets.only(right: 20),
       child: ListTile(
@@ -718,6 +643,45 @@ class MainScreenState extends State<MainScreen> {
                       ? 0.015
                       : 0.03),
         ),
+      ),
+    );
+  }
+
+  Widget emptyScreen() {
+    return Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.only(bottom: 20),
+      child: Column(
+        children: [
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.7,
+            height: MediaQuery.of(context).size.height *
+                (isPortrait(context)
+                    ? 0.45
+                    : isTablet()
+                        ? 0.5
+                        : 0.7),
+            child: Container(
+              padding: EdgeInsets.only(bottom: 10),
+              foregroundDecoration: BoxDecoration(
+                color: Colors.grey,
+                backgroundBlendMode: BlendMode.saturation,
+              ),
+              child: Image.asset("lib/images/illustration.png"),
+            ),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "NOTHING TO SHOW",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+                color: Colors.grey,
+              ),
+            ),
+          )
+        ],
       ),
     );
   }

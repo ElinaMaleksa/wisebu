@@ -16,10 +16,7 @@ class DetailsScreen extends StatefulWidget {
   final bool allowToEditData;
 
   DetailsScreen(
-      {@required this.title,
-      @required this.expenseList,
-      @required this.dateTimeMonth,
-      @required this.allowToEditData});
+      {@required this.title, @required this.expenseList, @required this.dateTimeMonth, @required this.allowToEditData});
 
   @override
   State<StatefulWidget> createState() => DetailsScreenState();
@@ -84,8 +81,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                     hintText: "Category title",
                     enabled: false,
                     onPressedOk: () async {
-                      if (dialogTitleController.text != categoryTitle &&
-                          dialogTitleController.text.isNotEmpty) {
+                      if (dialogTitleController.text != categoryTitle && dialogTitleController.text.isNotEmpty) {
                         // update record titles in db to new title
                         for (var i in itemsList)
                           categoriesBloc.handleUpdateCategory(Category(
@@ -101,8 +97,9 @@ class DetailsScreenState extends State<DetailsScreen> {
                       // go to MainScreen
                       Navigator.of(context).pop(true);
                       snackBar(
-                          context: context,
-                          infoMessage: "Category title updated!");
+                        context: context,
+                        infoMessage: "Category title updated!",
+                      );
                     },
                   );
                 },
@@ -124,8 +121,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                           right: MediaQuery.of(context).size.width * 0.05,
                           left: MediaQuery.of(context).size.width * 0.1,
                           bottom: 15),
-                      height: MediaQuery.of(context).size.height *
-                          (isPortrait(context) ? 0.22 : 0.3),
+                      height: MediaQuery.of(context).size.height * (isPortrait(context) ? 0.22 : 0.3),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -133,8 +129,7 @@ class DetailsScreenState extends State<DetailsScreen> {
                             flex: 6,
                             child: Text(
                               categoryTitle,
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
+                              style: TextStyle(color: Colors.white, fontSize: 20),
                             ),
                           ),
                           Flexible(
@@ -144,10 +139,8 @@ class DetailsScreenState extends State<DetailsScreen> {
                               child: circleAvatar(
                                   context: context,
                                   color: Colors.white,
-                                  textColor:
-                                      Theme.of(context).colorScheme.secondary,
-                                  mainText:
-                                      "-${amountTextShown(amount: total)} €"),
+                                  textColor: Theme.of(context).colorScheme.secondary,
+                                  mainText: "-${amountTextShown(amount: total)} €"),
                             ),
                           )
                         ],
@@ -190,41 +183,30 @@ class DetailsScreenState extends State<DetailsScreen> {
                                                 haveTextFields: false,
                                                 context: context,
                                                 onPressedOk: () {
-                                                  categoriesBloc
-                                                      .inDeleteCategory
-                                                      .add(itemsList[index].id);
+                                                  categoriesBloc.inDeleteCategory.add(itemsList[index].id);
                                                   Navigator.pop(context);
 
                                                   // update local list
                                                   itemsList.removeAt(index);
-                                                  if (itemsList.length == 0)
-                                                    Navigator.of(context)
-                                                        .pop(true);
+                                                  if (itemsList.length == 0) Navigator.of(context).pop(true);
 
-                                                  snackBar(
-                                                      context: context,
-                                                      infoMessage:
-                                                          "Record deleted!");
+                                                  snackBar(context: context, infoMessage: "Record deleted!");
                                                 },
                                                 title: "Delete?",
                                                 okButtonName: "Delete",
-                                                contentText:
-                                                    "This record will be gone forever.");
+                                                contentText: "This record will be gone forever.");
                                           }
                                         : null,
                                     child: Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 20, horizontal: 5),
+                                      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 5),
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Flexible(
                                             flex: 3,
                                             child: FittedBox(
                                               child: Text(
-                                                formattedDate(
-                                                    itemsList[index].date),
+                                                formattedDate(itemsList[index].date),
                                                 maxLines: 1,
                                               ),
                                             ),
@@ -232,16 +214,11 @@ class DetailsScreenState extends State<DetailsScreen> {
                                           Flexible(
                                             flex: 5,
                                             child: Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 5),
+                                              padding: EdgeInsets.symmetric(horizontal: 5),
                                               alignment: Alignment.centerLeft,
                                               child: Text(
-                                                itemsList[index].description ??
-                                                    "",
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .secondary),
+                                                itemsList[index].description ?? "",
+                                                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                                               ),
                                             ),
                                           ),

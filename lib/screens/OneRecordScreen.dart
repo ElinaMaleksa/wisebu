@@ -59,8 +59,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
       amountController.text = category.amount.toString();
       dateTime = DateTime.parse(category.date);
     } else
-      dateTime =
-          widget.date != null ? DateTime.parse(widget.date) : DateTime.now();
+      dateTime = widget.date != null ? DateTime.parse(widget.date) : DateTime.now();
 
     super.initState();
   }
@@ -100,9 +99,8 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     titleText(
-                        title: !widget.isNewExpenseCategory && category == null
-                            ? "Choose a category"
-                            : "Category title"),
+                        title:
+                            !widget.isNewExpenseCategory && category == null ? "Choose a category" : "Category title"),
                     if (widget.isNewExpenseCategory || category != null)
                       TextField(
                         textInputAction: TextInputAction.next,
@@ -111,8 +109,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                         ],
                         enabled: category == null ? true : false,
                         style: TextStyle(
-                          color:
-                              category == null ? Colors.black : Colors.black45,
+                          color: category == null ? Colors.black : Colors.black45,
                           fontWeight: category == null ? null : FontWeight.bold,
                         ),
                         controller: titleController,
@@ -137,8 +134,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             dropdownValue = newValue;
                           });
                         },
-                        items: categoryTitles
-                            .map<DropdownMenuItem<String>>((String value) {
+                        items: categoryTitles.map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),
@@ -197,9 +193,7 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               titleText(title: "Date"),
-                              SizedBox(
-                                height: 10,
-                              ),
+                              SizedBox(height: 10),
                               datePicker(
                                 context: context,
                               ),
@@ -217,81 +211,54 @@ class OneRecordScreenState extends State<OneRecordScreen> {
                             if (titleController.text.length > 30) {
                               snackBar(
                                 context: context,
-                                infoMessage:
-                                    "Please enter a title with valid length!",
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.secondary,
+                                infoMessage: "Please enter a title with valid length!",
+                                backgroundColor: Theme.of(context).colorScheme.secondary,
                               );
-                            } else if (descriptionController.text.length >
-                                200) {
+                            } else if (descriptionController.text.length > 200) {
                               snackBar(
                                 context: context,
-                                infoMessage:
-                                    "Please enter a description with valid length!",
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.secondary,
+                                infoMessage: "Please enter a description with valid length!",
+                                backgroundColor: Theme.of(context).colorScheme.secondary,
                               );
                             } else if (amountController.text.isEmpty) {
                               snackBar(
                                 context: context,
                                 infoMessage: "Please enter a valid amount!",
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.secondary,
+                                backgroundColor: Theme.of(context).colorScheme.secondary,
                               );
                             } else {
                               if (category == null) {
                                 Category category = Category(
                                   title: widget.isNewExpenseCategory
-                                      ? titleController.text
-                                                  .trimRight()
-                                                  .trimLeft()
-                                                  .length ==
-                                              0
+                                      ? titleController.text.trimRight().trimLeft().length == 0
                                           ? "Expense"
-                                          : titleController.text
-                                              .trimRight()
-                                              .trimLeft()
+                                          : titleController.text.trimRight().trimLeft()
                                       : dropdownValue,
                                   type: expenseType,
                                   date: dateTime.toString(),
                                   amount: double.parse(amountController.text),
-                                  description: descriptionController.text
-                                      .trimRight()
-                                      .trimLeft(),
+                                  description: descriptionController.text.trimRight().trimLeft(),
                                 );
 
                                 categoriesBloc.inAddCategory.add(category);
                                 Navigator.of(context).pop(true);
-                                snackBar(
-                                    context: context,
-                                    infoMessage: "Record saved!");
+                                snackBar(context: context, infoMessage: "Record saved!");
                               } else {
                                 categoriesBloc.handleUpdateCategory(
                                   Category(
                                     id: category.id,
-                                    title: titleController.text
-                                                .trimRight()
-                                                .trimLeft()
-                                                .length ==
-                                            0
+                                    title: titleController.text.trimRight().trimLeft().length == 0
                                         ? "Expense"
-                                        : titleController.text
-                                            .trimRight()
-                                            .trimLeft(),
+                                        : titleController.text.trimRight().trimLeft(),
                                     amount: double.parse(amountController.text),
-                                    description: descriptionController.text
-                                            .trimRight()
-                                            .trimLeft() ??
-                                        "",
+                                    description: descriptionController.text.trimRight().trimLeft() ?? "",
                                     date: dateTime.toString(),
                                     type: category.type,
                                   ),
                                 );
 
                                 Navigator.of(context).pop(true);
-                                snackBar(
-                                    context: context,
-                                    infoMessage: "Record updated!");
+                                snackBar(context: context, infoMessage: "Record updated!");
                               }
                             }
                           },
@@ -326,17 +293,14 @@ class OneRecordScreenState extends State<OneRecordScreen> {
             firstDate: firstDate.add(Duration(days: 1)),
             lastDate: lastDate.subtract(Duration(days: 1)),
           ).then((pickedDate) {
-            if (pickedDate != null &&
-                pickedDate.isAfter(firstDate) &&
-                pickedDate.isBefore(lastDate)) {
+            if (pickedDate != null && pickedDate.isAfter(firstDate) && pickedDate.isBefore(lastDate)) {
               dateTime = pickedDate;
             }
           });
         else
           snackBar(
             context: context,
-            infoMessage:
-                "Date exceeds more than a year and could not be edited, sorry",
+            infoMessage: "Date exceeds more than a year and could not be edited, sorry",
           );
       },
       child: FittedBox(
